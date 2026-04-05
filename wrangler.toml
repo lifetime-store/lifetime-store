@@ -6,9 +6,9 @@ compatibility_date = "2026-04-05"
 [[d1_databases]]
 binding = "DB"
 database_name = "lifetime_store_db"
-database_id = "PASTE_YOUR_REAL_D1_DATABASE_ID_HERE"
-preview_database_id = "PASTE_THE_SAME_D1_ID_HERE_FOR_NOW"
+database_id = "bc222039-babe-4e22-bf21-95d4c5017c32"
+preview_database_id = "bc222039-babe-4e22-bf21-95d4c5017c32"
 
 [vars]
 BRAND_NAME = "Lifetime"
-BRAND_EMAIL = "lifeverse_technologies@zohomail.com"
+BRAND_EMAIL = "lifetimestore@zohomail.com"
