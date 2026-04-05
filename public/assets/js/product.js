@@ -21,6 +21,12 @@ function buildGallery(images, fallback) {
   `;
 }
 
+function stockBadge(totalStock) {
+  if (totalStock <= 0) return '<span class="pill pill-stock soldout">Sold out</span>';
+  if (totalStock <= 5) return `<span class="pill pill-stock limited">Only ${totalStock} left</span>`;
+  return `<span class="pill pill-stock in">${totalStock} available now</span>`;
+}
+
 async function loadProduct() {
   const slug = qs("slug");
   const mount = document.querySelector("[data-product-view]");
@@ -44,10 +50,15 @@ async function loadProduct() {
   mount.innerHTML = `
     <div class="split-grid product-split">
       ${buildGallery(product.images, product.short_code)}
-      <article class="panel">
+      <article class="panel luxury-panel">
         <div class="eyebrow">${escapeHtml(product.category)}</div>
         <h1 style="font-size: clamp(2rem, 5vw, 4rem);">${escapeHtml(product.name)}</h1>
         <p class="lead">${escapeHtml(product.description)}</p>
+        <div class="product-meta product-meta-strong">
+          <span class="pill">${escapeHtml(product.short_code)}</span>
+          ${stockBadge(Number(product.total_stock || 0))}
+          <span class="pill">${Number(product.image_count || 0)} image${Number(product.image_count || 0) === 1 ? '' : 's'}</span>
+        </div>
         <div class="price-line">
           <span class="price-main">${formatNGN(product.price_ngn)}</span>
           <span class="price-alt">${formatUSD(product.price_usd)}</span>
@@ -66,6 +77,10 @@ async function loadProduct() {
             <strong>Care</strong>
             <p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p>
           </article>
+          <article>
+            <strong>Support</strong>
+            <p class="muted">Need help before or after purchase? Contact support@lifetime-store.shop.</p>
+          </article>
         </div>
         <form data-add-cart-form>
           <label>Color
@@ -81,8 +96,9 @@ async function loadProduct() {
           <label>Quantity
             <input type="number" name="quantity" value="1" min="1" max="20">
           </label>
+          <div class="notice notice-warning hide" data-stock-warning></div>
           <div class="inline-actions">
-            <button class="btn btn-primary" type="submit">Add to Cart</button>
+            <button class="btn btn-primary" type="submit" data-cart-submit>Add to Cart</button>
             <a class="btn btn-soft" href="/verify.html">Authenticity Promise</a>
           </div>
         </form>
@@ -103,12 +119,44 @@ async function loadProduct() {
   });
 
   const form = mount.querySelector("[data-add-cart-form]");
+  const warning = mount.querySelector('[data-stock-warning]');
+  const submitBtn = mount.querySelector('[data-cart-submit]');
+
+  function refreshVariantState() {
+    const color = form.color.value;
+    const size = form.size.value;
+    const variant = product.variants.find((entry) => entry.color === color && entry.size === size) || firstVariant;
+    const stock = Number(variant?.stock || 0);
+    form.quantity.max = stock > 0 ? String(stock) : '1';
+    if (stock <= 0) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sold out';
+      warning.classList.remove('hide');
+      warning.textContent = 'This size and color is currently sold out.';
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add to Cart';
+      warning.classList.remove('hide');
+      warning.textContent = stock <= 5 ? `Only ${stock} left in this variant.` : `${stock} available in this variant.`;
+    }
+  }
+
+  form.color.addEventListener('change', refreshVariantState);
+  form.size.addEventListener('change', refreshVariantState);
+  refreshVariantState();
+
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const color = form.color.value;
     const size = form.size.value;
     const quantity = Number(form.quantity.value || 1);
     const variant = product.variants.find((entry) => entry.color === color && entry.size === size) || firstVariant;
+
+    if (!variant || Number(variant.stock || 0) < quantity || Number(variant.stock || 0) <= 0) {
+      warning.classList.remove('hide');
+      warning.textContent = 'Selected quantity is not available right now.';
+      return;
+    }
 
     addToCart({
       key: `${product.slug}:${variant.id}`,
@@ -121,12 +169,13 @@ async function loadProduct() {
       size: variant.size,
       quantity,
       unit_price: variant.price_ngn || product.price_ngn,
-      currency: "NGN"
+      currency: "NGN",
+      stock: Number(variant.stock || 0)
     });
 
-    form.reset();
     form.quantity.value = "1";
     alert("Added to cart.");
+    refreshVariantState();
   });
 }
 

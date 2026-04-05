@@ -7,6 +7,13 @@ function productImage(product) {
   return `<div class="product-image-fallback">${escapeHtml(product.category || product.short_code || 'LT')}</div>`;
 }
 
+function stockBadge(product) {
+  const stock = Number(product.total_stock || 0);
+  if (stock <= 0) return `<span class="pill pill-stock soldout">Sold out</span>`;
+  if (stock <= 5) return `<span class="pill pill-stock limited">Only ${stock} left</span>`;
+  return `<span class="pill pill-stock in">${stock} in stock</span>`;
+}
+
 async function loadFeaturedProducts() {
   const mount = document.querySelector("[data-featured-products]");
   if (!mount) return;
@@ -20,11 +27,12 @@ async function loadFeaturedProducts() {
   }
 
   mount.innerHTML = products.map((product) => `
-    <article class="product-card">
+    <article class="product-card luxury-card">
       <div class="product-image has-media">${productImage(product)}</div>
       <div class="product-meta">
         <span class="pill">${escapeHtml(product.category)}</span>
         <span class="pill">${escapeHtml(product.short_code)}</span>
+        ${stockBadge(product)}
       </div>
       <div>
         <h3>${escapeHtml(product.name)}</h3>

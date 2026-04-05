@@ -1,21 +1,16 @@
-
 const CART_KEY = "lifetime_cart_v1";
 const ADMIN_TOKEN_KEY = "lifetime_admin_token";
 
 export async function apiGet(url, admin = false) {
   const headers = {};
-  if (admin) {
-    headers["X-Admin-Token"] = getAdminToken();
-  }
+  if (admin) headers["X-Admin-Token"] = getAdminToken();
   const res = await fetch(url, { headers });
   return res.json();
 }
 
 export async function apiPost(url, payload, admin = false) {
   const headers = { "Content-Type": "application/json" };
-  if (admin) {
-    headers["X-Admin-Token"] = getAdminToken();
-  }
+  if (admin) headers["X-Admin-Token"] = getAdminToken();
   const res = await fetch(url, {
     method: "POST",
     headers,
@@ -57,7 +52,9 @@ export function addToCart(item) {
   const cart = getCart();
   const existing = cart.find((entry) => entry.key === item.key);
   if (existing) {
-    existing.quantity += item.quantity || 1;
+    const max = Number(item.stock || existing.stock || 9999);
+    existing.quantity = Math.min(max, Number(existing.quantity || 0) + Number(item.quantity || 1));
+    existing.stock = max;
   } else {
     cart.push(item);
   }

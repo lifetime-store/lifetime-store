@@ -1,9 +1,22 @@
 export async function listProducts(env, featuredOnly = false) {
   const sql = `
     SELECT
-      p.id, p.slug, p.short_code, p.name, p.tagline, p.category, p.description,
-      p.price_ngn, p.price_usd, p.materials, p.fit_notes, p.care, p.featured, p.active,
-      COUNT(DISTINCT v.id) AS variant_count,
+      p.id,
+      p.slug,
+      p.short_code,
+      p.name,
+      p.tagline,
+      p.category,
+      p.description,
+      p.price_ngn,
+      p.price_usd,
+      p.materials,
+      p.fit_notes,
+      p.care,
+      p.featured,
+      p.active,
+      COUNT(DISTINCT CASE WHEN v.active = 1 THEN v.id END) AS variant_count,
+      COALESCE(SUM(CASE WHEN v.active = 1 THEN v.stock ELSE 0 END), 0) AS total_stock,
       (
         SELECT pi.data_url
         FROM product_images pi
@@ -17,25 +30,35 @@ export async function listProducts(env, featuredOnly = false) {
         WHERE pi.product_id = p.id
       ) AS image_count
     FROM products p
-    LEFT JOIN variants v ON v.product_id = p.id AND v.active = 1
+    LEFT JOIN variants v ON v.product_id = p.id
     WHERE p.active = 1
     ${featuredOnly ? "AND p.featured = 1" : ""}
     GROUP BY p.id
     ORDER BY p.featured DESC, p.id ASC
   `;
   const { results } = await env.DB.prepare(sql).all();
-  return results || [];
+  return (results || []).map((item) => ({
+    ...item,
+    total_stock: Number(item.total_stock || 0)
+  }));
 }
 
 export async function getProductBySlug(env, slug) {
   const product = await env.DB.prepare(`
-    SELECT *, (
-      SELECT data_url
-      FROM product_images pi
-      WHERE pi.product_id = products.id
-      ORDER BY pi.is_primary DESC, pi.sort_order ASC, pi.id ASC
-      LIMIT 1
-    ) AS primary_image_url
+    SELECT
+      products.*,
+      (
+        SELECT data_url
+        FROM product_images pi
+        WHERE pi.product_id = products.id
+        ORDER BY pi.is_primary DESC, pi.sort_order ASC, pi.id ASC
+        LIMIT 1
+      ) AS primary_image_url,
+      (
+        SELECT COUNT(*)
+        FROM product_images pi
+        WHERE pi.product_id = products.id
+      ) AS image_count
     FROM products
     WHERE slug = ? AND active = 1
     LIMIT 1
@@ -59,7 +82,19 @@ export async function getProductBySlug(env, slug) {
     ORDER BY is_primary DESC, sort_order ASC, id ASC
   `).bind(product.id).all();
 
-  return { ...product, variants: variantsResult.results || [], images: imagesResult.results || [] };
+  const variants = (variantsResult.results || []).map((variant) => ({
+    ...variant,
+    stock: Number(variant.stock || 0)
+  }));
+  const totalStock = variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
+
+  return {
+    ...product,
+    image_count: Number(product.image_count || 0),
+    total_stock: totalStock,
+    variants,
+    images: imagesResult.results || []
+  };
 }
 
 export async function getBatchWithProduct(env, batchId) {

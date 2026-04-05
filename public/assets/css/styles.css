@@ -605,3 +605,59 @@ form {
     height: 240px;
   }
 }
+
+
+.hero-card-premium {
+  background:
+    radial-gradient(circle at top right, rgba(239,227,207,0.16), transparent 30%),
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+}
+.hero-ribbon-row {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.6rem;
+  margin-top:1.25rem;
+}
+.luxury-card,
+.luxury-panel {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-color: rgba(239,227,207,0.12);
+}
+.product-meta-strong {
+  margin-bottom: 0.75rem;
+}
+.pill-stock.in {
+  color:#e9f7df;
+  border-color:rgba(136,196,122,0.35);
+}
+.pill-stock.limited {
+  color:#fff4da;
+  border-color:rgba(214,184,124,0.35);
+}
+.pill-stock.soldout {
+  color:#ffdada;
+  border-color:rgba(215,125,125,0.35);
+}
+.footer-grid-wide {
+  grid-template-columns: 1fr auto auto;
+}
+.footer-contact {
+  display:grid;
+  gap:0.3rem;
+}
+.footer-contact a {
+  color:var(--muted);
+}
+.support-direct-line {
+  margin-bottom:1rem;
+  color:var(--muted);
+}
+.product-card h3 {
+  letter-spacing:-0.02em;
+}
+@media (max-width: 980px) {
+  .footer-grid-wide {
+    grid-template-columns:1fr;
+  }
+}

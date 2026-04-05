@@ -8,34 +8,13 @@
   <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="container nav">
-      <a href="/" class="brand">
-        <span class="brand-mark">LT</span>
-        <span class="brand-copy">
-          LIFETIME
-          <small>Quiet premium essentials</small>
-        </span>
-      </a>
-      <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/about.html">About</a>
-        <a href="/support.html">Support</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
-      </div>
-    </div>
-  </header>
-
+<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/about.html">About</a><a href="/support.html">Support</a></nav><div class="nav-actions"><a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a></div></div></header>
 <main class="section">
   <div class="container split-grid">
-    <section class="panel">
+    <section class="panel luxury-panel">
       <div class="eyebrow">Checkout</div>
       <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Complete your order</h1>
-      <p class="muted">Enter your delivery information below. Payment is processed through a secure checkout flow. After successful verification, your order is confirmed and a confirmation email is sent automatically.</p>
+      <p class="muted">Enter your delivery information below. Payment is processed through a secure checkout flow. After successful verification, your order is confirmed and a confirmation email is sent automatically from orders@lifetime-store.shop.</p>
       <div data-checkout-notice></div>
       <form data-checkout-form>
         <div class="form-grid">
@@ -50,7 +29,7 @@
         <button class="btn btn-primary" type="submit">Pay securely</button>
       </form>
     </section>
-    <aside class="panel">
+    <aside class="panel luxury-panel">
       <div class="eyebrow">Order summary</div>
       <div data-checkout-items class="stack"></div>
       <div class="divider"></div>
@@ -60,27 +39,13 @@
       <div class="details-list">
         <article><strong>Secure checkout</strong><p class="muted">Payments are processed through an encrypted payment page before an order is marked as paid.</p></article>
         <article><strong>Order protection</strong><p class="muted">Your payment reference and order number are recorded automatically to support tracking and customer assistance.</p></article>
-        <article><strong>Verified support</strong><p class="muted">If you need help after payment, use your order number or authenticity code on the support page.</p></article>
+        <article><strong>Dedicated contact</strong><p class="muted">Post-purchase communication can be handled through <a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a>.</p></article>
       </div>
     </aside>
   </div>
 </main>
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <strong>LIFETIME</strong>
-        <small>Quiet quality. Everyday wear. Verified originals.</small>
-      </div>
-      <nav class="footer-links">
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/support.html">Support</a>
-        <a href="/about.html">About</a>
-      </nav>
-    </div>
-  </footer>
-
-  <script type="module" src="/assets/js/api.js"></script>
-  <script type="module" src="/assets/js/checkout.js"></script>
+<footer class="footer"><div class="container footer-grid footer-grid-wide"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><div class="footer-contact"><a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/about.html">About</a></nav></div></footer>
+<script type="module" src="/assets/js/api.js"></script>
+<script type="module" src="/assets/js/checkout.js"></script>
 </body>
 </html>

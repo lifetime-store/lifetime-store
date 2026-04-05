@@ -7,6 +7,13 @@ function productImage(product) {
   return `<div class="product-image-fallback">${escapeHtml(product.short_code)}</div>`;
 }
 
+function stockBadge(product) {
+  const stock = Number(product.total_stock || 0);
+  if (stock <= 0) return `<span class="pill pill-stock soldout">Sold out</span>`;
+  if (stock <= 5) return `<span class="pill pill-stock limited">Only ${stock} left</span>`;
+  return `<span class="pill pill-stock in">${stock} available</span>`;
+}
+
 async function loadShop() {
   const mount = document.querySelector("[data-shop-products]");
   if (!mount) return;
@@ -20,12 +27,12 @@ async function loadShop() {
   }
 
   mount.innerHTML = products.map((product) => `
-    <article class="product-card">
+    <article class="product-card luxury-card">
       <div class="product-image has-media">${productImage(product)}</div>
       <div class="product-meta">
         <span class="pill">${escapeHtml(product.category)}</span>
         <span class="pill">${escapeHtml(product.variant_count)} variant${Number(product.variant_count) === 1 ? "" : "s"}</span>
-        <span class="pill">${escapeHtml(product.image_count || 0)} image${Number(product.image_count || 0) === 1 ? "" : "s"}</span>
+        ${stockBadge(product)}
       </div>
       <div>
         <h3>${escapeHtml(product.name)}</h3>
