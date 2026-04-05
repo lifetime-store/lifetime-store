@@ -1,6 +1,6 @@
-
 import { error, ok, optionsResponse } from "../_lib/response.js";
 import { readJson, toFloat } from "../_lib/parse.js";
+import { sendOrderAlerts } from "../_lib/mail.js";
 
 function makeOrderNumber() {
   const date = new Date().toISOString().slice(0, 10).replaceAll("-", "");
@@ -74,6 +74,24 @@ export async function onRequestPost(context) {
       Number(item.unit_price || 0),
       currency
     ).run();
+  }
+
+  try {
+    await sendOrderAlerts(context.env, {
+      order_number: orderNumber,
+      customer_name,
+      email,
+      phone,
+      country,
+      city,
+      address,
+      notes,
+      currency,
+      total,
+      status: 'pending'
+    }, items, 'Order request received');
+  } catch (mailError) {
+    console.error('Order email alert failed', mailError);
   }
 
   return ok({

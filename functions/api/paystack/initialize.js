@@ -128,7 +128,7 @@ export async function onRequestPost(context) {
       WHERE id = ?
     `).bind(
       "payment_init_failed",
-      `${notes ? `${notes} | ` : ""}Paystack initialization failed.`,
+      `${notes ? `${notes} | ` : ""}Paystack initialization failed.",
       orderId
     ).run();
 

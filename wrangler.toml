@@ -1,4 +1,3 @@
-
 "$schema" = "./node_modules/wrangler/config-schema.json"
 name = "lifetime-store"
 pages_build_output_dir = "./public"
@@ -18,4 +17,3 @@ bucket_name = "lifetime-products"
 BRAND_NAME = "Lifetime"
 BRAND_EMAIL = "lifetimestore@zohomail.com"
 R2_PUBLIC_BASE_URL = "https://pub-9e90e5f450064cbeb75d5403e2acd4ed.r2.dev"
-PAYSTACK_PUBLIC_KEY = "pk_live_77d5b9a1e47bfa36151c733925cecb01515666aa"

@@ -1,3 +1,28 @@
+import { sendOrderAlerts } from "../../_lib/mail.js";
+
+async function loadOrderItems(env, orderId) {
+  const { results } = await env.DB.prepare(`
+    SELECT product_name, color, size, quantity
+    FROM order_items
+    WHERE order_id = ?
+    ORDER BY id ASC
+  `).bind(orderId).all();
+  return results || [];
+}
+
+async function notifyPaidIfNeeded(env, order) {
+  if (order.status === 'paid') return;
+  const items = await loadOrderItems(env, order.id);
+  try {
+    await sendOrderAlerts(env, {
+      ...order,
+      status: 'paid'
+    }, items, 'Paid order received');
+  } catch (mailError) {
+    console.error('Paid order email alert failed', mailError);
+  }
+}
+
 export async function onRequestGet(context) {
   const env = context.env;
   const url = new URL(context.request.url);
@@ -32,7 +57,7 @@ export async function onRequestGet(context) {
   }
 
   const order = await env.DB.prepare(`
-    SELECT id, total, notes
+    SELECT id, total, notes, status, order_number, customer_name, email, phone, country, city, address, currency
     FROM orders
     WHERE order_number = ?
     LIMIT 1
@@ -55,6 +80,8 @@ export async function onRequestGet(context) {
       `${order.notes ? `${order.notes} | ` : ""}Paid via Paystack. Ref: ${reference}`,
       orderNumber
     ).run();
+
+    await notifyPaidIfNeeded(env, order);
 
     return Response.redirect(
       `${url.origin}/checkout.html?paid=1&order=${encodeURIComponent(orderNumber)}`,

@@ -1,22 +1,32 @@
-# Lifetime production-ready store package
+# Lifetime advanced production package
 
-This package is the clean replacement for your `lifetime-store` repo.
-
-## What is included
+This package upgrades the current Lifetime store with production-focused improvements:
 - Hidden private admin at `/studio-lt.html`
-- Full admin product management
-- Product image upload through admin
-- R2 image storage support
+- R2 product image uploads from admin
 - Paystack checkout flow
-- D1 products, variants, batches, codes, orders, and support records
+- Paystack webhook endpoint for server-side confirmation
+- Email alerts for paid orders and support issues
+- Customer confirmation emails for paid orders and support requests
+- Security headers middleware for every response
 - Cleaner customer-facing copy with no preview/demo wording
 
-## Before deploy
-Make sure these already exist in Cloudflare:
-- D1 database: `lifetime_store_db`
-- R2 bucket: `lifetime-products`
-- Secret: `ADMIN_TOKEN`
-- Secret: `PAYSTACK_SECRET_KEY`
+## What this package expects in Cloudflare
+### Bindings
+- D1 database: `DB`
+- R2 bucket: `BUCKET`
+
+### Secrets
+- `ADMIN_TOKEN`
+- `PAYSTACK_SECRET_KEY`
+- `RESEND_API_KEY` (for order/issue emails)
+
+### Variables
+- `BRAND_NAME`
+- `BRAND_EMAIL`
+- `R2_PUBLIC_BASE_URL`
+- `PAYSTACK_PUBLIC_KEY`
+- `ALERT_TO_EMAIL` (where internal order/issue alerts should go)
+- `MAIL_FROM_EMAIL` (verified sender for Resend, e.g. `Lifetime <orders@yourdomain.com>`)
 
 ## Upload to GitHub
 Replace the contents of your `lifetime-store` repo root with:
@@ -29,20 +39,21 @@ Replace the contents of your `lifetime-store` repo root with:
 
 Do not upload the zip itself. Upload the extracted files.
 
-## Cloudflare settings
-This package expects:
-- D1 binding: `DB`
-- R2 binding: `BUCKET`
-- R2 public base URL:
-  `https://pub-9e90e5f450064cbeb75d5403e2acd4ed.r2.dev`
+## After deploy
+1. Redeploy Cloudflare Pages.
+2. Confirm the admin page loads at `/studio-lt.html`.
+3. Confirm product uploads still work.
+4. Add this Paystack webhook URL in Paystack after deploy:
+   `https://lifetime-store.pages.dev/api/paystack/webhook`
+5. Set up Resend (or another supported sender) and add:
+   - `RESEND_API_KEY`
+   - `MAIL_FROM_EMAIL`
+   - `ALERT_TO_EMAIL`
 
-If the dashboard Add button for Bindings does not work, the binding is already defined in `wrangler.toml`.
-
-## Paystack
-The checkout flow is ready for Paystack.
-- Keep using `sk_test_...` until your account is approved.
-- When you are ready for live payments, replace `PAYSTACK_SECRET_KEY` in Cloudflare with your live secret and redeploy.
-
-## Admin link
-Keep this private:
-`https://lifetime-store.pages.dev/studio-lt.html`
+## Recommended dashboard security steps (manual)
+These are not bundled in code and must be configured in Cloudflare/Paystack:
+- Protect `/studio-lt.html` with **Cloudflare Access**
+- Add **Cloudflare Turnstile** to admin, support, and checkout forms
+- Add **Rate Limiting Rules** for `/api/admin/*`, `/api/paystack/*`, `/api/support`, and `/api/verify/*`
+- Add a **custom domain** and redirect `pages.dev` traffic to it
+- Rotate all exposed secrets immediately if they were ever shown on screen
