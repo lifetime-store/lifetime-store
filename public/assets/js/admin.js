@@ -258,64 +258,60 @@ function bindProductActions() {
     button.addEventListener('click', () => {
       const product = state.products.find((entry) => Number(entry.id) === Number(button.dataset.editProduct));
       if (!product) return;
-      state.selectedProductId = product.id;
-      document.querySelector('[data-product-id]').value = product.id;
-      document.querySelector('[data-product-slug]').value = product.slug || '';
-      document.querySelector('[data-product-short-code]').value = product.short_code || '';
-      document.querySelector('[data-product-name]').value = product.name || '';
-      document.querySelector('[data-product-category]').value = product.category || '';
-      document.querySelector('[data-product-price-ngn]').value = product.price_ngn ?? '';
-      document.querySelector('[data-product-price-usd]').value = product.price_usd ?? '';
-      document.querySelector('[data-product-tagline]').value = product.tagline || '';
-      document.querySelector('[data-product-description]').value = product.description || '';
-      document.querySelector('[data-product-materials]').value = product.materials || '';
-      document.querySelector('[data-product-fit-notes]').value = product.fit_notes || '';
-      document.querySelector('[data-product-care]').value = product.care || '';
-      document.querySelector('[data-image-product-id]').value = product.id;
-      loadImages(product.id);
-      populateVariantSelects(product.id);
-      notice('[data-admin-product-notice]', `Editing ${escapeHtml(product.name)}`, 'success');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const form = document.querySelector('[data-product-form]');
+      form.product_id.value = product.id;
+      form.slug.value = product.slug;
+      form.short_code.value = product.short_code;
+      form.name.value = product.name;
+      form.category.value = product.category || '';
+      form.price_ngn.value = product.price_ngn;
+      form.price_usd.value = product.price_usd;
+      form.tagline.value = product.tagline || '';
+      form.description.value = product.description || '';
+      form.materials.value = product.materials || '';
+      form.fit_notes.value = product.fit_notes || '';
+      form.care.value = product.care || '';
+      form.active.checked = Number(product.active) === 1;
+      form.featured.checked = Number(product.featured) === 1;
+      document.querySelector('[data-product-submit]').textContent = 'Update product';
+      notice('[data-product-notice]', `Loaded ${product.name} into the editor.`);
     });
   });
 
   document.querySelectorAll('[data-manage-images]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const productId = Number(button.dataset.manageImages);
-      state.selectedProductId = productId;
-      document.querySelector('[data-image-product-id]').value = productId;
-      await loadImages(productId);
-      window.scrollTo({ top: document.querySelector('[data-images-section]').offsetTop - 20, behavior: 'smooth' });
-    });
-  });
-
-  document.querySelectorAll('[data-toggle-featured]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const productId = Number(button.dataset.toggleFeatured);
-      const res = await apiPost('/api/admin/products', { action: 'toggle_featured', product_id: productId }, true);
-      notice('[data-admin-product-notice]', res.message || 'Featured state updated.', res.ok ? 'success' : 'danger');
-      if (res.ok) await loadProducts();
+      state.selectedProductId = Number(button.dataset.manageImages);
+      document.querySelector('[data-image-product-id]').value = state.selectedProductId;
+      populateVariantSelects(state.selectedProductId);
+      await loadImages(state.selectedProductId);
+      notice('[data-images-notice]', 'Image manager switched to selected product.');
     });
   });
 
   document.querySelectorAll('[data-toggle-product]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const productId = Number(button.dataset.toggleProduct);
-      const res = await apiPost('/api/admin/products', { action: 'toggle_active', product_id: productId }, true);
-      notice('[data-admin-product-notice]', res.message || 'Product updated.', res.ok ? 'success' : 'danger');
-      if (res.ok) await loadProducts();
+      const result = await apiPost('/api/admin/products', { action: 'toggle_active', id: Number(button.dataset.toggleProduct) }, true);
+      notice('[data-global-notice]', result.message || 'Product status updated.', result.ok ? 'success' : 'danger');
+      if (result.ok) await refreshDashboard();
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-featured]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const result = await apiPost('/api/admin/products', { action: 'toggle_featured', id: Number(button.dataset.toggleFeatured) }, true);
+      notice('[data-global-notice]', result.message || 'Featured status updated.', result.ok ? 'success' : 'danger');
+      if (result.ok) await refreshDashboard();
     });
   });
 
   document.querySelectorAll('[data-delete-product]').forEach((button) => {
     button.addEventListener('click', async () => {
-      if (!window.confirm('Delete this product? This also removes its variants, images, batches, and codes.')) return;
-      const productId = Number(button.dataset.deleteProduct);
-      const res = await apiPost('/api/admin/products', { action: 'delete', product_id: productId }, true);
-      notice('[data-admin-product-notice]', res.message || 'Product deleted.', res.ok ? 'success' : 'danger');
-      if (res.ok) {
-        if (Number(state.selectedProductId) === Number(productId)) state.selectedProductId = null;
-        await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), refreshDashboard()]);
+      if (!confirm('Delete this product, its variants, batches, and codes?')) return;
+      const result = await apiPost('/api/admin/products', { action: 'delete', id: Number(button.dataset.deleteProduct) }, true);
+      notice('[data-global-notice]', result.message || 'Product deleted.', result.ok ? 'success' : 'danger');
+      if (result.ok) {
+        if (state.selectedProductId === Number(button.dataset.deleteProduct)) state.selectedProductId = null;
+        await refreshDashboard();
       }
     });
   });
@@ -326,31 +322,29 @@ function bindVariantActions() {
     button.addEventListener('click', () => {
       const variant = state.variants.find((entry) => Number(entry.id) === Number(button.dataset.editVariant));
       if (!variant) return;
-      document.querySelector('[data-variant-id]').value = variant.id;
-      document.querySelector('[data-variant-product-id]').value = variant.product_id;
-      document.querySelector('[data-variant-sku]').value = variant.sku || '';
-      document.querySelector('[data-variant-color]').value = variant.color || '';
-      document.querySelector('[data-variant-color-code]').value = variant.color_code || '';
-      document.querySelector('[data-variant-size]').value = variant.size || '';
-      document.querySelector('[data-variant-size-code]').value = variant.size_code || '';
-      document.querySelector('[data-variant-stock]').value = variant.stock ?? 0;
-      document.querySelector('[data-variant-price-ngn]').value = variant.price_ngn ?? 0;
-      document.querySelector('[data-variant-price-usd]').value = variant.price_usd ?? 0;
-      document.querySelector('[data-variant-active]').checked = Boolean(variant.active);
-      notice('[data-admin-variant-notice]', `Editing ${escapeHtml(variant.sku)}`, 'success');
-      window.scrollTo({ top: document.querySelector('[data-variant-form]').offsetTop - 20, behavior: 'smooth' });
+      const form = document.querySelector('[data-variant-form]');
+      form.variant_id.value = variant.id;
+      form.product_id.value = variant.product_id;
+      form.sku.value = variant.sku;
+      form.color.value = variant.color;
+      form.color_code.value = variant.color_code;
+      form.size.value = variant.size;
+      form.size_code.value = variant.size_code;
+      form.stock.value = variant.stock;
+      form.price_ngn.value = variant.price_ngn ?? '';
+      form.price_usd.value = variant.price_usd ?? '';
+      form.active.checked = Number(variant.active) === 1;
+      document.querySelector('[data-variant-submit]').textContent = 'Update variant';
+      notice('[data-variant-notice]', `Loaded ${variant.sku} into the editor.`);
     });
   });
 
   document.querySelectorAll('[data-delete-variant]').forEach((button) => {
     button.addEventListener('click', async () => {
-      if (!window.confirm('Delete this variant?')) return;
-      const variantId = Number(button.dataset.deleteVariant);
-      const res = await apiPost('/api/admin/variants', { action: 'delete', variant_id: variantId }, true);
-      notice('[data-admin-variant-notice]', res.message || 'Variant deleted.', res.ok ? 'success' : 'danger');
-      if (res.ok) {
-        await Promise.all([loadVariants(state.selectedProductId), loadProducts(), loadBatches(), loadCodes(), refreshDashboard()]);
-      }
+      if (!confirm('Delete this variant?')) return;
+      const result = await apiPost('/api/admin/variants', { action: 'delete', id: Number(button.dataset.deleteVariant) }, true);
+      notice('[data-global-notice]', result.message || 'Variant deleted.', result.ok ? 'success' : 'danger');
+      if (result.ok) await Promise.all([loadProducts(), loadVariants(state.selectedProductId)]);
     });
   });
 }
@@ -358,25 +352,21 @@ function bindVariantActions() {
 function bindImageActions() {
   document.querySelectorAll('[data-set-primary]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const imageId = Number(button.dataset.setPrimary);
-      const productId = Number(document.querySelector('[data-image-product-id]').value);
-      const res = await apiPost('/api/admin/product-images', { action: 'set_primary', image_id: imageId, product_id: productId }, true);
-      notice('[data-admin-image-notice]', res.message || 'Primary image updated.', res.ok ? 'success' : 'danger');
-      if (res.ok) {
-        await Promise.all([loadImages(productId), loadProducts()]);
+      const result = await apiPost('/api/admin/product-images', { action: 'set_primary', image_id: Number(button.dataset.setPrimary), product_id: state.selectedProductId }, true);
+      notice('[data-images-notice]', result.message || 'Primary image updated.', result.ok ? 'success' : 'danger');
+      if (result.ok) {
+        await Promise.all([loadImages(state.selectedProductId), loadProducts()]);
       }
     });
   });
 
   document.querySelectorAll('[data-delete-image]').forEach((button) => {
     button.addEventListener('click', async () => {
-      if (!window.confirm('Delete this image?')) return;
-      const imageId = Number(button.dataset.deleteImage);
-      const productId = Number(document.querySelector('[data-image-product-id]').value);
-      const res = await apiPost('/api/admin/product-images', { action: 'delete', image_id: imageId }, true);
-      notice('[data-admin-image-notice]', res.message || 'Image deleted.', res.ok ? 'success' : 'danger');
-      if (res.ok) {
-        await Promise.all([loadImages(productId), loadProducts()]);
+      if (!confirm('Delete this image?')) return;
+      const result = await apiPost('/api/admin/product-images', { action: 'delete', image_id: Number(button.dataset.deleteImage) }, true);
+      notice('[data-images-notice]', result.message || 'Image deleted.', result.ok ? 'success' : 'danger');
+      if (result.ok) {
+        await Promise.all([loadImages(state.selectedProductId), loadProducts()]);
       }
     });
   });
@@ -385,29 +375,60 @@ function bindImageActions() {
 function bindOrderActions() {
   document.querySelectorAll('[data-save-order]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const orderId = Number(button.dataset.saveOrder);
-      const status = document.querySelector(`[data-order-status-select="${orderId}"]`).value;
-      const res = await apiPost('/api/admin/orders', { action: 'update_status', order_id: orderId, status }, true);
-      notice('[data-admin-order-notice]', res.message || 'Order updated.', res.ok ? 'success' : 'danger');
-      if (res.ok) await loadOrders();
+      const id = Number(button.dataset.saveOrder);
+      const status = document.querySelector(`[data-order-status-select="${id}"]`).value;
+      const result = await apiPost('/api/admin/orders', { id, status }, true);
+      notice('[data-global-notice]', result.message || 'Order updated.', result.ok ? 'success' : 'danger');
+      if (result.ok) await loadOrders();
     });
   });
 }
 
-function readFileAsDataURL(file) {
+async function compressImage(file, maxWidth = 1600, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-function bindForms() {
-  document.querySelector('[data-admin-login-form]').addEventListener('submit', async (event) => {
+function resetProductForm() {
+  const form = document.querySelector('[data-product-form]');
+  form.reset();
+  form.product_id.value = '';
+  form.active.checked = true;
+  form.featured.checked = false;
+  document.querySelector('[data-product-submit]').textContent = 'Save product';
+}
+
+function resetVariantForm() {
+  const form = document.querySelector('[data-variant-form]');
+  form.reset();
+  form.variant_id.value = '';
+  form.active.checked = true;
+  document.querySelector('[data-variant-submit]').textContent = 'Save variant';
+  if (state.selectedProductId) form.product_id.value = state.selectedProductId;
+}
+
+function setupForms() {
+  document.querySelector('[data-login-form]').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const token = document.querySelector('[data-admin-token]').value.trim();
-    if (!token) return showAuthNotice('Enter your admin token.');
+    const token = event.currentTarget.token.value.trim();
+    if (!token) return;
     setAdminToken(token);
     await refreshDashboard();
   });
@@ -416,8 +437,7 @@ function bindForms() {
     event.preventDefault();
     const form = event.currentTarget;
     const payload = {
-      action: 'upsert',
-      product_id: form.product_id.value ? Number(form.product_id.value) : null,
+      id: form.product_id.value ? Number(form.product_id.value) : null,
       slug: form.slug.value.trim(),
       short_code: form.short_code.value.trim(),
       name: form.name.value.trim(),
@@ -428,32 +448,33 @@ function bindForms() {
       description: form.description.value.trim(),
       materials: form.materials.value.trim(),
       fit_notes: form.fit_notes.value.trim(),
-      care: form.care.value.trim()
+      care: form.care.value.trim(),
+      active: form.active.checked ? 1 : 0,
+      featured: form.featured.checked ? 1 : 0
     };
-    const res = await apiPost('/api/admin/products', payload, true);
-    notice('[data-admin-product-notice]', res.message || 'Product saved.', res.ok ? 'success' : 'danger');
-    if (res.ok) {
-      if (res.product_id) {
-        form.product_id.value = res.product_id;
-        state.selectedProductId = res.product_id;
-        document.querySelector('[data-image-product-id]').value = res.product_id;
+    const result = await apiPost('/api/admin/products', payload, true);
+    notice('[data-product-notice]', result.message || 'Saved.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      if (result.productId) {
+        state.selectedProductId = result.productId;
+        document.querySelector('[data-image-product-id]').value = result.productId;
       }
-      await Promise.all([loadProducts(), loadVariants(state.selectedProductId), refreshDashboard()]);
+      resetProductForm();
+      await refreshDashboard();
     }
   });
 
-  document.querySelector('[data-reset-product-form]').addEventListener('click', () => {
-    document.querySelector('[data-product-form]').reset();
-    document.querySelector('[data-product-id]').value = '';
-    notice('[data-admin-product-notice]', 'Product form reset.', 'success');
+  document.querySelector('[data-product-reset]').addEventListener('click', (event) => {
+    event.preventDefault();
+    resetProductForm();
+    notice('[data-product-notice]', 'Product editor reset.');
   });
 
   document.querySelector('[data-variant-form]').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const payload = {
-      action: 'upsert',
-      variant_id: form.variant_id.value ? Number(form.variant_id.value) : null,
+      id: form.variant_id.value ? Number(form.variant_id.value) : null,
       product_id: Number(form.product_id.value),
       sku: form.sku.value.trim(),
       color: form.color.value.trim(),
@@ -461,63 +482,54 @@ function bindForms() {
       size: form.size.value.trim(),
       size_code: form.size_code.value.trim(),
       stock: Number(form.stock.value || 0),
-      price_ngn: Number(form.price_ngn.value || 0),
-      price_usd: Number(form.price_usd.value || 0),
-      active: form.active.checked
+      price_ngn: form.price_ngn.value === '' ? null : Number(form.price_ngn.value),
+      price_usd: form.price_usd.value === '' ? null : Number(form.price_usd.value),
+      active: form.active.checked ? 1 : 0
     };
-    const res = await apiPost('/api/admin/variants', payload, true);
-    notice('[data-admin-variant-notice]', res.message || 'Variant saved.', res.ok ? 'success' : 'danger');
-    if (res.ok) {
-      form.reset();
-      form.variant_id.value = '';
-      await Promise.all([loadVariants(state.selectedProductId), loadProducts(), refreshDashboard()]);
+    const result = await apiPost('/api/admin/variants', payload, true);
+    notice('[data-variant-notice]', result.message || 'Variant saved.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      resetVariantForm();
+      await Promise.all([loadProducts(), loadVariants(state.selectedProductId)]);
     }
   });
 
-  document.querySelector('[data-reset-variant-form]').addEventListener('click', () => {
-    const form = document.querySelector('[data-variant-form]');
-    form.reset();
-    form.variant_id.value = '';
-    notice('[data-admin-variant-notice]', 'Variant form reset.', 'success');
+  document.querySelector('[data-variant-reset]').addEventListener('click', (event) => {
+    event.preventDefault();
+    resetVariantForm();
+    notice('[data-variant-notice]', 'Variant editor reset.');
   });
 
-  document.querySelector('[data-image-product-id]').addEventListener('change', async (event) => {
-    state.selectedProductId = Number(event.target.value) || null;
-    populateVariantSelects(state.selectedProductId);
-    await loadImages(state.selectedProductId);
-  });
-
-  document.querySelector('[data-image-upload-form]').addEventListener('submit', async (event) => {
+  document.querySelector('[data-image-form]').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const productId = Number(form.product_id.value);
-    const files = Array.from(form.images.files || []);
-    if (!productId) return notice('[data-admin-image-notice]', 'Select a product first.', 'danger');
-    if (!files.length) return notice('[data-admin-image-notice]', 'Choose at least one image.', 'danger');
-
-    notice('[data-admin-image-notice]', 'Uploading images...', 'success');
-    for (let index = 0; index < files.length; index += 1) {
-      const file = files[index];
-      const dataUrl = await readFileAsDataURL(file);
-      const payload = {
-        action: 'upload',
-        product_id: productId,
-        data_url: dataUrl,
-        alt_text: form.alt_text.value.trim() || `${state.products.find((entry) => Number(entry.id) === Number(productId))?.name || 'Product'} image`,
-        is_primary: form.is_primary.checked && index === 0,
-        sort_order: index
-      };
-      const res = await apiPost('/api/admin/product-images', payload, true);
-      if (!res.ok) return notice('[data-admin-image-notice]', res.message || 'Image upload failed.', 'danger');
+    const file = form.image.files[0];
+    if (!productId || !file) {
+      notice('[data-images-notice]', 'Select a product and choose an image file first.', 'danger');
+      return;
     }
-
-    form.reset();
-    await Promise.all([loadImages(productId), loadProducts()]);
-    notice('[data-admin-image-notice]', 'Images uploaded.', 'success');
+    const dataUrl = await compressImage(file);
+    const result = await apiPost('/api/admin/product-images', {
+      action: 'upload',
+      product_id: productId,
+      data_url: dataUrl,
+      alt_text: form.alt_text.value.trim(),
+      is_primary: form.is_primary.checked ? 1 : 0,
+      sort_order: Number(form.sort_order.value || 0)
+    }, true);
+    notice('[data-images-notice]', result.message || 'Image uploaded.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      state.selectedProductId = productId;
+      form.reset();
+      await Promise.all([loadImages(productId), loadProducts()]);
+    }
   });
 
-  document.querySelector('[data-batch-product-id]').addEventListener('change', (event) => {
-    populateVariantSelects(Number(event.target.value) || null);
+  document.querySelector('[data-image-product-id]').addEventListener('change', async (event) => {
+    state.selectedProductId = Number(event.currentTarget.value || 0) || null;
+    populateVariantSelects(state.selectedProductId);
+    await loadImages(state.selectedProductId);
   });
 
   document.querySelector('[data-batch-form]').addEventListener('submit', async (event) => {
@@ -527,51 +539,54 @@ function bindForms() {
       product_id: Number(form.product_id.value),
       variant_id: form.variant_id.value ? Number(form.variant_id.value) : null,
       factory_name: form.factory_name.value.trim(),
-      quantity: Number(form.quantity.value || 0),
+      quantity: Number(form.quantity.value),
       status: form.status.value,
       manufactured_at: form.manufactured_at.value,
       notes: form.notes.value.trim()
     };
-    const res = await apiPost('/api/admin/batches', payload, true);
-    notice('[data-admin-batch-notice]', res.message || 'Batch created.', res.ok ? 'success' : 'danger');
-    if (res.ok) {
+    const result = await apiPost('/api/admin/batches', payload, true);
+    notice('[data-batch-notice]', result.message || 'Batch created.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
       form.reset();
-      await Promise.all([loadBatches(), refreshDashboard()]);
+      await Promise.all([loadBatches(), loadProducts()]);
     }
   });
 
-  document.querySelector('[data-generate-codes-form]').addEventListener('submit', async (event) => {
+  document.querySelector('[data-batch-product-id]').addEventListener('change', (event) => {
+    populateVariantSelects(event.currentTarget.value);
+  });
+
+  document.querySelector('[data-generate-form]').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    const payload = {
+    const result = await apiPost('/api/admin/codes', {
+      action: 'generate',
       batch_id: Number(form.batch_id.value),
-      quantity: Number(form.quantity.value || 0)
-    };
-    const res = await apiPost('/api/admin/codes/generate', payload, true);
-    notice('[data-admin-code-notice]', res.message || 'Codes generated.', res.ok ? 'success' : 'danger');
-    if (res.ok) {
-      document.querySelector('[data-generated-codes]').value = (res.codes || []).join('\n');
-      await Promise.all([loadCodes(), refreshDashboard()]);
+      quantity: Number(form.quantity.value)
+    }, true);
+    notice('[data-codes-notice]', result.message || 'Codes generated.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      form.reset();
+      await loadCodes();
     }
   });
 
-  document.querySelector('[data-activate-codes-form]').addEventListener('submit', async (event) => {
+  document.querySelector('[data-activate-form]').addEventListener('submit', async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     const codes = form.codes.value.split('\n').map((entry) => entry.trim()).filter(Boolean);
-    const res = await apiPost('/api/admin/codes/activate', { codes }, true);
-    notice('[data-admin-code-notice]', res.message || 'Codes activated.', res.ok ? 'success' : 'danger');
-    if (res.ok) await Promise.all([loadCodes(), refreshDashboard()]);
+    const result = await apiPost('/api/admin/codes', { action: 'activate', codes }, true);
+    notice('[data-codes-notice]', result.message || 'Codes updated.', result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      form.reset();
+      await loadCodes();
+    }
   });
 }
 
-async function initialiseAdmin() {
-  bindForms();
-  const token = getAdminToken();
-  if (token) {
-    document.querySelector('[data-admin-token]').value = token;
+document.addEventListener('DOMContentLoaded', async () => {
+  setupForms();
+  if (getAdminToken()) {
     await refreshDashboard();
   }
-}
-
-initialiseAdmin();
+});
