@@ -1,5 +1,4 @@
-
-import { apiPost, clearCart, formatNGN, getCart } from "./api.js";
+import { apiPost, clearCart, formatNGN, getCart, qs } from "./api.js";
 
 function renderOrderPreview() {
   const cart = getCart();
@@ -14,6 +13,7 @@ function renderOrderPreview() {
   }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+
   mount.innerHTML = cart.map((item) => `
     <article class="cart-item">
       <strong>${item.product_name}</strong>
@@ -27,6 +27,26 @@ function renderOrderPreview() {
   return true;
 }
 
+function setNotice(html) {
+  const notice = document.querySelector("[data-checkout-notice]");
+  if (notice) {
+    notice.innerHTML = html;
+  }
+}
+
+function handlePaymentReturn() {
+  const paid = qs("paid");
+  const order = qs("order");
+
+  if (paid === "1" && order) {
+    clearCart();
+    setNotice(`<div class="notice notice-success">Payment confirmed. Your order number is <strong>${order}</strong>.</div>`);
+  } else if (paid === "0") {
+    const failedOrder = order ? ` for <strong>${order}</strong>` : "";
+    setNotice(`<div class="notice notice-danger">Payment was not completed${failedOrder}. You can try again.</div>`);
+  }
+}
+
 async function submitOrder(event) {
   event.preventDefault();
 
@@ -37,6 +57,8 @@ async function submitOrder(event) {
   }
 
   const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+
   const payload = {
     customer_name: form.customer_name.value,
     email: form.email.value,
@@ -49,20 +71,23 @@ async function submitOrder(event) {
     items: cart
   };
 
-  const result = await apiPost("/api/orders", payload);
-  const notice = document.querySelector("[data-checkout-notice]");
+  button.disabled = true;
+  button.textContent = "Redirecting to Paystack...";
 
-  if (result.ok) {
-    clearCart();
-    notice.innerHTML = `<div class="notice notice-success">Order request received. Your order number is <strong>${result.orderNumber}</strong>.</div>`;
-    form.reset();
-    renderOrderPreview();
-  } else {
-    notice.innerHTML = `<div class="notice notice-danger">${result.message || "Order could not be submitted."}</div>`;
+  const result = await apiPost("/api/paystack/initialize", payload);
+
+  if (result.ok && result.authorizationUrl) {
+    window.location.href = result.authorizationUrl;
+    return;
   }
+
+  setNotice(`<div class="notice notice-danger">${result.message || "Could not initialize Paystack payment."}</div>`);
+  button.disabled = false;
+  button.textContent = "Pay with Paystack";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  handlePaymentReturn();
   renderOrderPreview();
   document.querySelector("[data-checkout-form]")?.addEventListener("submit", submitOrder);
 });
