@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Checkout — Lifetime</title>
-  <meta name="description" content="Lifetime quiet premium essentials with item verification and long-term quality.">
+  <meta name="description" content="Checkout your Lifetime order.">
   <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
@@ -23,20 +23,19 @@
         <a href="/verify.html">Verify</a>
         <a href="/about.html">About</a>
         <a href="/support.html">Support</a>
-        <a href="/admin.html">Admin</a>
       </nav>
       <div class="nav-actions">
         <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
       </div>
     </div>
   </header>
-  
+
 <main class="section">
   <div class="container split-grid">
     <section class="panel">
       <div class="eyebrow">Checkout</div>
-      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Submit an order request</h1>
-      <p class="muted">This starter stack records orders in your database so you can confirm payment and delivery manually.</p>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Complete your order</h1>
+      <p class="muted">Fill in your delivery details below. Your order is recorded in the Lifetime system and payment is completed through your enabled payment options.</p>
       <div data-checkout-notice></div>
       <form data-checkout-form>
         <div class="form-grid">
@@ -47,8 +46,8 @@
           <label>City <input name="city"></label>
           <label>Address <input name="address"></label>
         </div>
-        <label>Notes <textarea name="notes" placeholder="Special delivery notes or order instructions"></textarea></label>
-        <button class="btn btn-primary" type="submit">Submit order</button>
+        <label>Notes <textarea name="notes" placeholder="Delivery notes or order instructions"></textarea></label>
+        <button class="btn btn-primary" type="submit">Place order</button>
       </form>
     </section>
     <aside class="panel">
@@ -57,10 +56,15 @@
       <div class="divider"></div>
       <h3>Total</h3>
       <div class="price-main" data-checkout-total>₦0</div>
+      <div class="divider"></div>
+      <div class="details-list">
+        <article><strong>NGN checkout</strong><p class="muted">Best added with Paystack or Flutterwave for local card, bank transfer, and NGN checkout.</p></article>
+        <article><strong>PayPal</strong><p class="muted">Use PayPal Checkout once your merchant account and business credentials are ready.</p></article>
+        <article><strong>Crypto</strong><p class="muted">Add a hosted crypto checkout such as Coinbase Commerce for customer-paid digital assets.</p></article>
+      </div>
     </aside>
   </div>
 </main>
-
   <footer class="footer">
     <div class="container footer-grid">
       <div class="footer-brand">
@@ -75,6 +79,7 @@
       </nav>
     </div>
   </footer>
+
   <script type="module" src="/assets/js/api.js"></script>
   <script type="module" src="/assets/js/checkout.js"></script>
 </body>

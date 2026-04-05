@@ -1,4 +1,4 @@
-# Lifetime Brand Stack
+# Lifetime Store Final Stack
 
 Quiet premium clothing storefront for **Lifetime** with:
 
@@ -105,7 +105,7 @@ npm run deploy
 
 ## First admin login
 
-Open `/admin.html`.
+Open `/studio-lt.html`.
 
 Use the same value as `ADMIN_TOKEN`.
 
