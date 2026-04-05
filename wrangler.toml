@@ -9,6 +9,11 @@ database_name = "lifetime_store_db"
 database_id = "bc222039-babe-4e22-bf21-95d4c5017c32"
 preview_database_id = "bc222039-babe-4e22-bf21-95d4c5017c32"
 
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "lifetime-products"
+
 [vars]
 BRAND_NAME = "Lifetime"
 BRAND_EMAIL = "lifetimestore@zohomail.com"
+R2_PUBLIC_BASE_URL = "https://pub-9e90e5f450064cbeb75d5403e2acd4ed.r2.dev"
