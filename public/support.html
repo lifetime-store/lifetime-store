@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Support — Lifetime</title>
+  <meta name="description" content="Lifetime quiet premium essentials with item verification and long-term quality.">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/" class="brand">
+        <span class="brand-mark">LT</span>
+        <span class="brand-copy">
+          LIFETIME
+          <small>Quiet premium essentials</small>
+        </span>
+      </a>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/shop.html">Shop</a>
+        <a href="/verify.html">Verify</a>
+        <a href="/about.html">About</a>
+        <a href="/support.html">Support</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
+      </div>
+    </div>
+  </header>
+  
+<main class="section">
+  <div class="container split-grid">
+    <section class="panel">
+      <div class="eyebrow">Support</div>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Report an issue</h1>
+      <p class="lead">Use this if a code looks wrong, a product seems fake, or you need help with an order or garment issue.</p>
+      <div data-support-notice></div>
+      <form data-support-form>
+        <div class="form-grid">
+          <label>Issue type
+            <select name="issue_type">
+              <option value="authenticity">Authenticity concern</option>
+              <option value="quality">Quality issue</option>
+              <option value="order">Order support</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Authenticity code
+            <input name="serial_code" placeholder="Optional">
+          </label>
+          <label>Name <input name="name" required></label>
+          <label>Email <input type="email" name="email" required></label>
+        </div>
+        <label>Message <textarea name="message" required placeholder="Tell us what happened"></textarea></label>
+        <button class="btn btn-primary" type="submit">Submit request</button>
+      </form>
+    </section>
+    <aside class="panel">
+      <div class="eyebrow">Why this matters</div>
+      <div class="details-list">
+        <article><strong>Customer trust</strong><p class="muted">Verification and issue logging help customers feel protected when they buy from you.</p></article>
+        <article><strong>Traceability</strong><p class="muted">A unique code gives your team a clean way to trace batches and support cases.</p></article>
+        <article><strong>Counterfeit control</strong><p class="muted">The registry gives you a starting point for spotting duplicate or suspicious products.</p></article>
+      </div>
+    </aside>
+  </div>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <strong>LIFETIME</strong>
+        <small>Quiet quality. Everyday wear. Verified originals.</small>
+      </div>
+      <nav class="footer-links">
+        <a href="/shop.html">Shop</a>
+        <a href="/verify.html">Verify</a>
+        <a href="/support.html">Support</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/assets/js/api.js"></script>
+  <script type="module" src="/assets/js/verify.js"></script>
+</body>
+</html>

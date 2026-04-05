@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Lifetime</title>
+  <meta name="description" content="Lifetime quiet premium essentials with item verification and long-term quality.">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/" class="brand">
+        <span class="brand-mark">LT</span>
+        <span class="brand-copy">
+          LIFETIME
+          <small>Quiet premium essentials</small>
+        </span>
+      </a>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/shop.html">Shop</a>
+        <a href="/verify.html">Verify</a>
+        <a href="/about.html">About</a>
+        <a href="/support.html">Support</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
+      </div>
+    </div>
+  </header>
+  
+<main class="section">
+  <div class="container">
+    <section class="panel" data-login-panel>
+      <div class="eyebrow">Private admin</div>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Lifetime control room</h1>
+      <p class="muted">Enter your admin token to manage products, batches, authenticity codes, issues, and order requests.</p>
+      <div data-login-notice></div>
+      <form data-login-form>
+        <label>Admin token <input name="token" required></label>
+        <button class="btn btn-primary" type="submit">Enter dashboard</button>
+      </form>
+    </section>
+
+    <section class="hide" data-admin-shell>
+      <div class="grid-3">
+        <article class="stat-card"><div class="stat-number" data-summary-products>0</div><div class="stat-label">Products</div></article>
+        <article class="stat-card"><div class="stat-number" data-summary-batches>0</div><div class="stat-label">Batches</div></article>
+        <article class="stat-card"><div class="stat-number" data-summary-codes>0</div><div class="stat-label">Codes</div></article>
+        <article class="stat-card"><div class="stat-number" data-summary-issues>0</div><div class="stat-label">Open issues</div></article>
+        <article class="stat-card"><div class="stat-number" data-summary-orders>0</div><div class="stat-label">Orders</div></article>
+      </div>
+
+      <div class="admin-grid section">
+        <div class="stack">
+          <article class="panel">
+            <div class="eyebrow">Add product</div>
+            <form data-product-form>
+              <div class="form-grid">
+                <label>Slug <input name="slug" placeholder="premium-polo" required></label>
+                <label>Short code <input name="short_code" placeholder="POL" required></label>
+                <label>Name <input name="name" placeholder="Lifetime Premium Polo" required></label>
+                <label>Category <input name="category" value="Polo"></label>
+                <label>Price NGN <input name="price_ngn" type="number" value="22000" required></label>
+                <label>Price USD <input name="price_usd" type="number" step="0.01" value="15.9" required></label>
+              </div>
+              <label>Tagline <input name="tagline" placeholder="Mature everyday statement."></label>
+              <label>Description <textarea name="description" placeholder="Describe the product."></textarea></label>
+              <label>Materials <input name="materials" placeholder="Premium cotton pique"></label>
+              <label>Fit notes <input name="fit_notes" placeholder="Refined regular fit."></label>
+              <label>Care <input name="care" placeholder="Cold wash. Hang dry."></label>
+              <button class="btn btn-primary" type="submit">Save product</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Create batch</div>
+            <form data-batch-form>
+              <div class="form-grid">
+                <label>Product ID <input name="product_id" required></label>
+                <label>Variant ID <input name="variant_id"></label>
+                <label>Factory name <input name="factory_name" value="Lekki Garment Factory"></label>
+                <label>Quantity <input name="quantity" type="number" value="50" required></label>
+                <label>Status
+                  <select name="status">
+                    <option value="draft">draft</option>
+                    <option value="sampling">sampling</option>
+                    <option value="ready">ready</option>
+                  </select>
+                </label>
+                <label>Manufactured at <input name="manufactured_at" type="date"></label>
+              </div>
+              <label>Notes <textarea name="notes" placeholder="Batch notes, trims, or QC comments"></textarea></label>
+              <button class="btn btn-primary" type="submit">Create batch</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Generate codes</div>
+            <form data-generate-form>
+              <div class="form-grid">
+                <label>Batch ID <input name="batch_id" required></label>
+                <label>Quantity <input name="quantity" type="number" value="10" required></label>
+              </div>
+              <button class="btn btn-primary" type="submit">Generate serial codes</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Activate codes</div>
+            <form data-activate-form>
+              <label>Codes to activate (one per line)
+                <textarea name="codes" placeholder="LT-26-POL-BLK-M-000001&#10;LT-26-POL-BLK-M-000002"></textarea>
+              </label>
+              <button class="btn btn-primary" type="submit">Activate selected codes</button>
+            </form>
+          </article>
+        </div>
+
+        <div class="stack">
+          <article class="panel">
+            <div class="eyebrow">Products</div>
+            <div data-admin-products class="stack"></div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Batches</div>
+            <div data-admin-batches class="stack"></div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Codes</div>
+            <div data-admin-codes class="stack"></div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Open issues</div>
+            <div data-admin-issues class="stack"></div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Recent orders</div>
+            <div data-admin-orders class="stack"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <strong>LIFETIME</strong>
+        <small>Quiet quality. Everyday wear. Verified originals.</small>
+      </div>
+      <nav class="footer-links">
+        <a href="/shop.html">Shop</a>
+        <a href="/verify.html">Verify</a>
+        <a href="/support.html">Support</a>
+        <a href="/about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/assets/js/api.js"></script>
+  <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>

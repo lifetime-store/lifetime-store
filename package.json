@@ -1,0 +1,15 @@
+{
+  "name": "lifetime-brand-stack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lifetime quiet premium clothing brand storefront + authenticity verification on Cloudflare Pages and D1.",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public",
+    "db:migrate:remote": "wrangler d1 execute lifetime_store_db --file=./migrations/0001_init.sql --remote",
+    "db:migrate:local": "wrangler d1 execute lifetime_store_db --file=./migrations/0001_init.sql --local"
+  },
+  "devDependencies": {
+    "wrangler": "^4.11.1"
+  }
+}
