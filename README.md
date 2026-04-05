@@ -1,138 +1,48 @@
-# Lifetime Store Final Stack
+# Lifetime production-ready store package
 
-Quiet premium clothing storefront for **Lifetime** with:
+This package is the clean replacement for your `lifetime-store` repo.
 
-- clean public storefront
-- product catalog, product page, cart, and checkout request flow
-- authenticity verification page for each garment code
-- admin dashboard to manage products, batches, and serial codes
-- Cloudflare Pages Functions API
-- Cloudflare D1 database
+## What is included
+- Hidden private admin at `/studio-lt.html`
+- Full admin product management
+- Product image upload through admin
+- R2 image storage support
+- Paystack checkout flow
+- D1 products, variants, batches, codes, orders, and support records
+- Cleaner customer-facing copy with no preview/demo wording
 
-## Why this stack
+## Before deploy
+Make sure these already exist in Cloudflare:
+- D1 database: `lifetime_store_db`
+- R2 bucket: `lifetime-products`
+- Secret: `ADMIN_TOKEN`
+- Secret: `PAYSTACK_SECRET_KEY`
 
-This project is built for the direction you described:
-**plain premium essentials, low-visible branding, repeatable quality, and item-level authenticity tracking**.
+## Upload to GitHub
+Replace the contents of your `lifetime-store` repo root with:
+- `public/`
+- `functions/`
+- `migrations/`
+- `package.json`
+- `wrangler.toml`
+- `README.md`
 
-It uses:
+Do not upload the zip itself. Upload the extracted files.
 
-- **Cloudflare Pages Functions** for the API layer
-- **Cloudflare D1** for products, orders, batches, and authenticity codes
-- **plain HTML/CSS/JS** so the site is easy to edit without framework complexity
+## Cloudflare settings
+This package expects:
+- D1 binding: `DB`
+- R2 binding: `BUCKET`
+- R2 public base URL:
+  `https://pub-9e90e5f450064cbeb75d5403e2acd4ed.r2.dev`
 
-## Project structure
+If the dashboard Add button for Bindings does not work, the binding is already defined in `wrangler.toml`.
 
-```text
-lifetime-brand-stack/
-├─ public/
-│  ├─ index.html
-│  ├─ shop.html
-│  ├─ product.html
-│  ├─ cart.html
-│  ├─ checkout.html
-│  ├─ verify.html
-│  ├─ support.html
-│  ├─ about.html
-│  ├─ admin.html
-│  └─ assets/
-│     ├─ css/styles.css
-│     └─ js/*.js
-├─ functions/
-│  ├─ api/
-│  │  ├─ products/index.js
-│  │  ├─ products/[slug].js
-│  │  ├─ verify/[code].js
-│  │  ├─ support.js
-│  │  ├─ orders.js
-│  │  └─ admin/*.js
-│  └─ _lib/*.js
-├─ migrations/
-│  └─ 0001_init.sql
-├─ wrangler.toml
-└─ package.json
-```
+## Paystack
+The checkout flow is ready for Paystack.
+- Keep using `sk_test_...` until your account is approved.
+- When you are ready for live payments, replace `PAYSTACK_SECRET_KEY` in Cloudflare with your live secret and redeploy.
 
-## Setup
-
-### 1) Install dependencies
-
-```bash
-npm install
-```
-
-### 2) Create your D1 database
-
-```bash
-npx wrangler d1 create lifetime_store_db
-```
-
-Copy the returned `database_id` into `wrangler.toml`.
-
-### 3) Run the database migration
-
-Remote:
-
-```bash
-npx wrangler d1 execute lifetime_store_db --file=./migrations/0001_init.sql --remote
-```
-
-Local preview:
-
-```bash
-npx wrangler d1 execute lifetime_store_db --file=./migrations/0001_init.sql --local
-```
-
-### 4) Change the admin token
-
-Edit this in `wrangler.toml` before deploy:
-
-```toml
-[vars]
-ADMIN_TOKEN = "CHANGE_THIS_BEFORE_DEPLOY"
-```
-
-### 5) Start local development
-
-```bash
-npm run dev
-```
-
-### 6) Deploy
-
-```bash
-npm run deploy
-```
-
-## First admin login
-
-Open `/studio-lt.html`.
-
-Use the same value as `ADMIN_TOKEN`.
-
-## Authenticity workflow
-
-1. Create or edit products in admin.
-2. Create a production batch.
-3. Generate serial codes for that batch.
-4. Print the labels from those generated codes.
-5. Attach those labels during manufacturing.
-6. Test-scan your codes.
-7. Activate the valid codes before launch.
-8. Customers scan the QR or visit `/verify.html` to confirm authenticity.
-
-## Label system recommended
-
-- **Outer hangtag:** retail barcode / SKU information
-- **Inner care label:** unique QR + serial code
-- **Database record:** product, size, color, batch, scan history, issue reports
-
-## Notes
-
-- This project stores orders as **order requests**, not card payments.
-- The storefront already includes **NGN and USD** display.
-- Add your own product photos later in `public/assets/` and update the product fields in admin.
-- Upgrade path later:
-  - add image uploads with R2
-  - add NFC-based authentication
-  - add payment integration
-  - add staff roles
+## Admin link
+Keep this private:
+`https://lifetime-store.pages.dev/studio-lt.html`

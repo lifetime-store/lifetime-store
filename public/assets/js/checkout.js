@@ -72,7 +72,7 @@ async function submitOrder(event) {
   };
 
   button.disabled = true;
-  button.textContent = "Redirecting to Paystack...";
+  button.textContent = "Redirecting to secure checkout...";
 
   const result = await apiPost("/api/paystack/initialize", payload);
 
@@ -81,9 +81,9 @@ async function submitOrder(event) {
     return;
   }
 
-  setNotice(`<div class="notice notice-danger">${result.message || "Could not initialize Paystack payment."}</div>`);
+  setNotice(`<div class="notice notice-danger">${result.message || "Could not initialize payment."}</div>`);
   button.disabled = false;
-  button.textContent = "Pay with Paystack";
+  button.textContent = "Pay securely";
 }
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -1,4 +1,3 @@
-
 import { requireAdmin } from "../../_lib/auth.js";
 import { error, ok, optionsResponse } from "../../_lib/response.js";
 import { readJson, toFloat, toInt } from "../../_lib/parse.js";
@@ -34,8 +33,17 @@ export async function onRequestPost(context) {
   if (unauthorized) return unauthorized;
 
   const body = await readJson(context.request);
+  const action = body.action || (body.id ? 'update' : 'create');
+
+  if (action === 'delete') {
+    const id = toInt(body.id);
+    if (!id) return error('Variant id is required.', 400);
+    await context.env.DB.prepare(`DELETE FROM variants WHERE id = ?`).bind(id).run();
+    return ok({ message: 'Variant deleted.' });
+  }
 
   const {
+    id = null,
     product_id,
     sku,
     color,
@@ -49,7 +57,29 @@ export async function onRequestPost(context) {
   } = body;
 
   if (!product_id || !sku || !color || !color_code || !size || !size_code) {
-    return error("product_id, sku, color, color_code, size, and size_code are required.", 400);
+    return error('product_id, sku, color, color_code, size, and size_code are required.', 400);
+  }
+
+  if (id) {
+    await context.env.DB.prepare(`
+      UPDATE variants
+      SET product_id = ?, sku = ?, color = ?, color_code = ?, size = ?, size_code = ?, stock = ?,
+          price_ngn = ?, price_usd = ?, active = ?
+      WHERE id = ?
+    `).bind(
+      product_id,
+      sku,
+      color,
+      color_code,
+      size,
+      size_code,
+      toInt(stock),
+      price_ngn === null || price_ngn === '' ? null : toInt(price_ngn),
+      price_usd === null || price_usd === '' ? null : toFloat(price_usd),
+      active ? 1 : 0,
+      id
+    ).run();
+    return ok({ message: 'Variant updated.' });
   }
 
   await context.env.DB.prepare(`
@@ -64,10 +94,10 @@ export async function onRequestPost(context) {
     size,
     size_code,
     toInt(stock),
-    price_ngn === null ? null : toInt(price_ngn),
-    price_usd === null ? null : toFloat(price_usd),
+    price_ngn === null || price_ngn === '' ? null : toInt(price_ngn),
+    price_usd === null || price_usd === '' ? null : toFloat(price_usd),
     active ? 1 : 0
   ).run();
 
-  return ok({ message: "Variant created." });
+  return ok({ message: 'Variant created.' });
 }

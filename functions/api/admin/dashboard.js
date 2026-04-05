@@ -1,6 +1,5 @@
-
-import { requireAdmin } from "../../_lib/auth.js";
 import { dashboardSummary } from "../../_lib/db.js";
+import { requireAdmin } from "../../_lib/auth.js";
 import { ok, optionsResponse } from "../../_lib/response.js";
 
 export async function onRequestOptions() {

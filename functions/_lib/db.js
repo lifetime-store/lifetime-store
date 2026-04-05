@@ -1,10 +1,21 @@
-
 export async function listProducts(env, featuredOnly = false) {
   const sql = `
     SELECT
       p.id, p.slug, p.short_code, p.name, p.tagline, p.category, p.description,
-      p.price_ngn, p.price_usd, p.materials, p.fit_notes, p.care, p.featured,
-      COUNT(v.id) AS variant_count
+      p.price_ngn, p.price_usd, p.materials, p.fit_notes, p.care, p.featured, p.active,
+      COUNT(DISTINCT v.id) AS variant_count,
+      (
+        SELECT pi.data_url
+        FROM product_images pi
+        WHERE pi.product_id = p.id
+        ORDER BY pi.is_primary DESC, pi.sort_order ASC, pi.id ASC
+        LIMIT 1
+      ) AS primary_image_url,
+      (
+        SELECT COUNT(*)
+        FROM product_images pi
+        WHERE pi.product_id = p.id
+      ) AS image_count
     FROM products p
     LEFT JOIN variants v ON v.product_id = p.id AND v.active = 1
     WHERE p.active = 1
@@ -18,7 +29,13 @@ export async function listProducts(env, featuredOnly = false) {
 
 export async function getProductBySlug(env, slug) {
   const product = await env.DB.prepare(`
-    SELECT *
+    SELECT *, (
+      SELECT data_url
+      FROM product_images pi
+      WHERE pi.product_id = products.id
+      ORDER BY pi.is_primary DESC, pi.sort_order ASC, pi.id ASC
+      LIMIT 1
+    ) AS primary_image_url
     FROM products
     WHERE slug = ? AND active = 1
     LIMIT 1
@@ -35,7 +52,14 @@ export async function getProductBySlug(env, slug) {
     ORDER BY color ASC, size ASC
   `).bind(product.price_ngn, product.price_usd, product.id).all();
 
-  return { ...product, variants: variantsResult.results || [] };
+  const imagesResult = await env.DB.prepare(`
+    SELECT id, data_url, alt_text, is_primary, sort_order
+    FROM product_images
+    WHERE product_id = ?
+    ORDER BY is_primary DESC, sort_order ASC, id ASC
+  `).bind(product.id).all();
+
+  return { ...product, variants: variantsResult.results || [], images: imagesResult.results || [] };
 }
 
 export async function getBatchWithProduct(env, batchId) {
@@ -57,12 +81,13 @@ export async function getBatchWithProduct(env, batchId) {
 }
 
 export async function dashboardSummary(env) {
-  const [products, batches, codes, issues, orders] = await Promise.all([
+  const [products, batches, codes, issues, orders, lowStock] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS total FROM products`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM batches`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM issues WHERE status = 'open'`).first(),
-    env.DB.prepare(`SELECT COUNT(*) AS total FROM orders`).first()
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM orders`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM variants WHERE active = 1 AND stock <= 5`).first()
   ]);
 
   return {
@@ -70,6 +95,7 @@ export async function dashboardSummary(env) {
     batches: batches?.total || 0,
     codes: codes?.total || 0,
     openIssues: issues?.total || 0,
-    orders: orders?.total || 0
+    orders: orders?.total || 0,
+    lowStock: lowStock?.total || 0
   };
 }

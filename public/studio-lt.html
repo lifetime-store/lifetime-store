@@ -31,125 +31,194 @@
     </div>
   </header>
 
-<main class="section">
-  <div class="container">
-    <section class="panel" data-login-panel>
-      <div class="eyebrow">Private studio</div>
-      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Studio LT</h1>
-      <p class="muted">Enter your admin token to manage products, batches, authenticity codes, support issues, and order requests.</p>
-      <div data-login-notice></div>
-      <form data-login-form>
-        <label>Admin token <input name="token" required></label>
-        <button class="btn btn-primary" type="submit">Enter dashboard</button>
-      </form>
-    </section>
+  <main class="section">
+    <div class="container">
+      <section class="panel" data-login-panel>
+        <div class="eyebrow">Private studio</div>
+        <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Studio LT</h1>
+        <p class="muted">Run Lifetime from one control room: add products, upload live cloth photos, edit pricing, hide or delete items, manage variants, batches, codes, and orders.</p>
+        <div data-login-notice></div>
+        <form data-login-form>
+          <label>Admin token <input name="token" required></label>
+          <button class="btn btn-primary" type="submit">Enter dashboard</button>
+        </form>
+      </section>
 
-    <section class="hide" data-admin-shell>
-      <div class="grid-3">
-        <article class="stat-card"><div class="stat-number" data-summary-products>0</div><div class="stat-label">Products</div></article>
-        <article class="stat-card"><div class="stat-number" data-summary-batches>0</div><div class="stat-label">Batches</div></article>
-        <article class="stat-card"><div class="stat-number" data-summary-codes>0</div><div class="stat-label">Codes</div></article>
-        <article class="stat-card"><div class="stat-number" data-summary-issues>0</div><div class="stat-label">Open issues</div></article>
-        <article class="stat-card"><div class="stat-number" data-summary-orders>0</div><div class="stat-label">Orders</div></article>
-      </div>
+      <section class="hide" data-admin-shell>
+        <div data-global-notice></div>
+        <div class="grid-3 grid-3-admin">
+          <article class="stat-card"><div class="stat-number" data-summary-products>0</div><div class="stat-label">Products</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-batches>0</div><div class="stat-label">Batches</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-codes>0</div><div class="stat-label">Codes</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-issues>0</div><div class="stat-label">Open issues</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-orders>0</div><div class="stat-label">Orders</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-low-stock>0</div><div class="stat-label">Low stock variants</div></article>
+        </div>
 
-      <div class="admin-grid section">
-        <div class="stack">
-          <article class="panel">
-            <div class="eyebrow">Add product</div>
-            <form data-product-form>
-              <div class="form-grid">
-                <label>Slug <input name="slug" placeholder="premium-polo" required></label>
-                <label>Short code <input name="short_code" placeholder="POL" required></label>
-                <label>Name <input name="name" placeholder="Lifetime Premium Polo" required></label>
-                <label>Category <input name="category" value="Polo"></label>
-                <label>Price NGN <input name="price_ngn" type="number" value="22000" required></label>
-                <label>Price USD <input name="price_usd" type="number" step="0.01" value="15.9" required></label>
-              </div>
-              <label>Tagline <input name="tagline" placeholder="Mature everyday statement."></label>
-              <label>Description <textarea name="description" placeholder="Describe the product."></textarea></label>
-              <label>Materials <input name="materials" placeholder="Premium cotton pique"></label>
-              <label>Fit notes <input name="fit_notes" placeholder="Refined regular fit."></label>
-              <label>Care <input name="care" placeholder="Cold wash. Hang dry."></label>
-              <button class="btn btn-primary" type="submit">Save product</button>
-            </form>
-          </article>
+        <div class="admin-grid section">
+          <div class="stack">
+            <article class="panel">
+              <div class="eyebrow">Product editor</div>
+              <div data-product-notice></div>
+              <form data-product-form>
+                <input type="hidden" name="product_id">
+                <div class="form-grid">
+                  <label>Slug <input name="slug" placeholder="premium-polo" required></label>
+                  <label>Short code <input name="short_code" placeholder="POL" required></label>
+                  <label>Name <input name="name" placeholder="Lifetime Premium Polo" required></label>
+                  <label>Category <input name="category" value="Polo"></label>
+                  <label>Price NGN <input name="price_ngn" type="number" value="22000" required></label>
+                  <label>Price USD <input name="price_usd" type="number" step="0.01" value="15.9" required></label>
+                </div>
+                <label>Tagline <input name="tagline" placeholder="Mature everyday statement."></label>
+                <label>Description <textarea name="description" placeholder="Describe the product."></textarea></label>
+                <label>Materials <input name="materials" placeholder="Premium cotton pique"></label>
+                <label>Fit notes <input name="fit_notes" placeholder="Refined regular fit."></label>
+                <label>Care <input name="care" placeholder="Cold wash. Hang dry."></label>
+                <div class="inline-checks">
+                  <label class="check-inline"><input type="checkbox" name="active" checked> Live on store</label>
+                  <label class="check-inline"><input type="checkbox" name="featured"> Featured on homepage</label>
+                </div>
+                <div class="inline-actions">
+                  <button class="btn btn-primary" type="submit" data-product-submit>Save product</button>
+                  <button class="btn btn-soft" type="button" data-product-reset>Reset editor</button>
+                </div>
+              </form>
+            </article>
 
-          <article class="panel">
-            <div class="eyebrow">Create batch</div>
-            <form data-batch-form>
-              <div class="form-grid">
-                <label>Product ID <input name="product_id" required></label>
-                <label>Variant ID <input name="variant_id"></label>
-                <label>Factory name <input name="factory_name" value="Lekki Garment Factory"></label>
-                <label>Quantity <input name="quantity" type="number" value="50" required></label>
-                <label>Status
-                  <select name="status">
-                    <option value="draft">draft</option>
-                    <option value="sampling">sampling</option>
-                    <option value="ready">ready</option>
-                    <option value="active">active</option>
-                  </select>
+            <article class="panel">
+              <div class="eyebrow">Image uploader</div>
+              <p class="muted">Snap your cloth, choose the product, upload, and the store updates automatically.</p>
+              <div data-images-notice></div>
+              <form data-image-form>
+                <div class="form-grid">
+                  <label>Product
+                    <select name="product_id" data-product-select data-image-product-id required></select>
+                  </label>
+                  <label>Sort order <input name="sort_order" type="number" value="0"></label>
+                </div>
+                <label>Image file <input name="image" type="file" accept="image/*" required></label>
+                <label>Alt text <input name="alt_text" placeholder="Black premium polo front view"></label>
+                <label class="check-inline"><input type="checkbox" name="is_primary" checked> Use as primary product image</label>
+                <button class="btn btn-primary" type="submit">Upload image</button>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Variant editor</div>
+              <div data-variant-notice></div>
+              <form data-variant-form>
+                <input type="hidden" name="variant_id">
+                <div class="form-grid">
+                  <label>Product
+                    <select name="product_id" data-product-select required></select>
+                  </label>
+                  <label>SKU <input name="sku" placeholder="LT-POL-BLK-M" required></label>
+                  <label>Color <input name="color" placeholder="Black" required></label>
+                  <label>Color code <input name="color_code" placeholder="BLK" required></label>
+                  <label>Size <input name="size" placeholder="M" required></label>
+                  <label>Size code <input name="size_code" placeholder="M" required></label>
+                  <label>Stock <input name="stock" type="number" value="0"></label>
+                  <label>Price NGN (optional) <input name="price_ngn" type="number"></label>
+                  <label>Price USD (optional) <input name="price_usd" type="number" step="0.01"></label>
+                </div>
+                <label class="check-inline"><input type="checkbox" name="active" checked> Variant active</label>
+                <div class="inline-actions">
+                  <button class="btn btn-primary" type="submit" data-variant-submit>Save variant</button>
+                  <button class="btn btn-soft" type="button" data-variant-reset>Reset variant</button>
+                </div>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Create batch</div>
+              <div data-batch-notice></div>
+              <form data-batch-form>
+                <div class="form-grid">
+                  <label>Product
+                    <select name="product_id" data-product-select data-batch-product-id required></select>
+                  </label>
+                  <label>Variant
+                    <select name="variant_id" data-variant-select></select>
+                  </label>
+                  <label>Factory name <input name="factory_name" value="Lekki Garment Factory"></label>
+                  <label>Quantity <input name="quantity" type="number" value="50" required></label>
+                  <label>Status
+                    <select name="status">
+                      <option value="draft">draft</option>
+                      <option value="sampling">sampling</option>
+                      <option value="ready">ready</option>
+                      <option value="active">active</option>
+                    </select>
+                  </label>
+                  <label>Manufactured at <input name="manufactured_at" type="date"></label>
+                </div>
+                <label>Notes <textarea name="notes" placeholder="Batch notes, trims, or QC comments"></textarea></label>
+                <button class="btn btn-primary" type="submit">Create batch</button>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Generate & activate codes</div>
+              <div data-codes-notice></div>
+              <form data-generate-form>
+                <div class="form-grid">
+                  <label>Batch ID <input name="batch_id" required></label>
+                  <label>Quantity <input name="quantity" type="number" value="10" required></label>
+                </div>
+                <button class="btn btn-primary" type="submit">Generate serial codes</button>
+              </form>
+              <div class="divider"></div>
+              <form data-activate-form>
+                <label>Codes to activate (one per line)
+                  <textarea name="codes" placeholder="LT-26-POL-BLK-M-000001&#10;LT-26-POL-BLK-M-000002"></textarea>
                 </label>
-                <label>Manufactured at <input name="manufactured_at" type="date"></label>
-              </div>
-              <label>Notes <textarea name="notes" placeholder="Batch notes, trims, or QC comments"></textarea></label>
-              <button class="btn btn-primary" type="submit">Create batch</button>
-            </form>
-          </article>
+                <button class="btn btn-soft" type="submit">Activate selected codes</button>
+              </form>
+            </article>
+          </div>
 
-          <article class="panel">
-            <div class="eyebrow">Generate codes</div>
-            <form data-generate-form>
-              <div class="form-grid">
-                <label>Batch ID <input name="batch_id" required></label>
-                <label>Quantity <input name="quantity" type="number" value="10" required></label>
-              </div>
-              <button class="btn btn-primary" type="submit">Generate serial codes</button>
-            </form>
-          </article>
+          <div class="stack">
+            <article class="panel">
+              <div class="eyebrow">Products</div>
+              <div data-admin-products class="stack"></div>
+            </article>
 
-          <article class="panel">
-            <div class="eyebrow">Activate codes</div>
-            <form data-activate-form>
-              <label>Codes to activate (one per line)
-                <textarea name="codes" placeholder="LT-26-POL-BLK-M-000001&#10;LT-26-POL-BLK-M-000002"></textarea>
-              </label>
-              <button class="btn btn-primary" type="submit">Activate selected codes</button>
-            </form>
-          </article>
+            <article class="panel">
+              <div class="eyebrow" data-images-title>Product images</div>
+              <div data-admin-images class="media-grid"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Variants</div>
+              <div data-admin-variants class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Recent orders</div>
+              <div data-admin-orders class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Batches</div>
+              <div data-admin-batches class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Codes</div>
+              <div data-admin-codes class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Open issues</div>
+              <div data-admin-issues class="stack"></div>
+            </article>
+          </div>
         </div>
+      </section>
+    </div>
+  </main>
 
-        <div class="stack">
-          <article class="panel">
-            <div class="eyebrow">Products</div>
-            <div data-admin-products class="stack"></div>
-          </article>
-
-          <article class="panel">
-            <div class="eyebrow">Batches</div>
-            <div data-admin-batches class="stack"></div>
-          </article>
-
-          <article class="panel">
-            <div class="eyebrow">Codes</div>
-            <div data-admin-codes class="stack"></div>
-          </article>
-
-          <article class="panel">
-            <div class="eyebrow">Open issues</div>
-            <div data-admin-issues class="stack"></div>
-          </article>
-
-          <article class="panel">
-            <div class="eyebrow">Recent orders</div>
-            <div data-admin-orders class="stack"></div>
-          </article>
-        </div>
-      </div>
-    </section>
-  </div>
-</main>
   <footer class="footer">
     <div class="container footer-grid">
       <div class="footer-brand">

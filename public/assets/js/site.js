@@ -1,5 +1,11 @@
-
 import { apiGet, escapeHtml, formatNGN, formatUSD } from "./api.js";
+
+function productImage(product) {
+  if (product.primary_image_url) {
+    return `<img src="${product.primary_image_url}" alt="${escapeHtml(product.name)}">`;
+  }
+  return `<div class="product-image-fallback">${escapeHtml(product.category || product.short_code || 'LT')}</div>`;
+}
 
 async function loadFeaturedProducts() {
   const mount = document.querySelector("[data-featured-products]");
@@ -15,7 +21,7 @@ async function loadFeaturedProducts() {
 
   mount.innerHTML = products.map((product) => `
     <article class="product-card">
-      <div class="product-image">${escapeHtml(product.category)}</div>
+      <div class="product-image has-media">${productImage(product)}</div>
       <div class="product-meta">
         <span class="pill">${escapeHtml(product.category)}</span>
         <span class="pill">${escapeHtml(product.short_code)}</span>

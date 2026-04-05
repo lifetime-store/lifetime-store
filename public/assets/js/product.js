@@ -1,10 +1,24 @@
-
 import { addToCart, apiGet, escapeHtml, formatNGN, formatUSD, qs } from "./api.js";
 
 function groupVariants(variants) {
   const colors = [...new Set(variants.map((v) => v.color))];
   const sizes = [...new Set(variants.map((v) => v.size))];
   return { colors, sizes };
+}
+
+function buildGallery(images, fallback) {
+  if (!images?.length) {
+    return `<article class="product-hero">${escapeHtml(fallback)}</article>`;
+  }
+  const primary = images[0];
+  return `
+    <div class="product-gallery">
+      <article class="product-hero product-hero-media"><img src="${primary.data_url}" alt="${escapeHtml(primary.alt_text || fallback)}"></article>
+      <div class="thumb-strip">
+        ${images.map((image) => `<button class="thumb-btn ${image.is_primary ? 'is-active' : ''}" type="button" data-gallery-image="${image.id}" data-gallery-url="${image.data_url}" data-gallery-alt="${escapeHtml(image.alt_text || fallback)}"><img src="${image.data_url}" alt="${escapeHtml(image.alt_text || fallback)}"></button>`).join('')}
+      </div>
+    </div>
+  `;
 }
 
 async function loadProduct() {
@@ -28,8 +42,8 @@ async function loadProduct() {
   const firstVariant = product.variants[0];
 
   mount.innerHTML = `
-    <div class="split-grid">
-      <article class="product-hero">${escapeHtml(product.short_code)}</article>
+    <div class="split-grid product-split">
+      ${buildGallery(product.images, product.short_code)}
       <article class="panel">
         <div class="eyebrow">${escapeHtml(product.category)}</div>
         <h1 style="font-size: clamp(2rem, 5vw, 4rem);">${escapeHtml(product.name)}</h1>
@@ -42,15 +56,15 @@ async function loadProduct() {
         <div class="details-list">
           <article>
             <strong>Fit</strong>
-            <p class="muted">${escapeHtml(product.fit_notes || "Slightly relaxed premium fit.")}</p>
+            <p class="muted">${escapeHtml(product.fit_notes || 'Slightly relaxed premium fit.')}</p>
           </article>
           <article>
             <strong>Materials</strong>
-            <p class="muted">${escapeHtml(product.materials || "Premium fabric build.")}</p>
+            <p class="muted">${escapeHtml(product.materials || 'Premium fabric build.')}</p>
           </article>
           <article>
             <strong>Care</strong>
-            <p class="muted">${escapeHtml(product.care || "Follow the care label for best lifespan.")}</p>
+            <p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p>
           </article>
         </div>
         <form data-add-cart-form>
@@ -75,6 +89,18 @@ async function loadProduct() {
       </article>
     </div>
   `;
+
+  const hero = mount.querySelector('.product-hero-media img');
+  mount.querySelectorAll('[data-gallery-image]').forEach((button) => {
+    button.addEventListener('click', () => {
+      mount.querySelectorAll('.thumb-btn').forEach((thumb) => thumb.classList.remove('is-active'));
+      button.classList.add('is-active');
+      if (hero) {
+        hero.src = button.dataset.galleryUrl;
+        hero.alt = button.dataset.galleryAlt;
+      }
+    });
+  });
 
   const form = mount.querySelector("[data-add-cart-form]");
   form.addEventListener("submit", (event) => {

@@ -1,8 +1,8 @@
 {
-  "name": "lifetime-brand-stack",
+  "name": "lifetime-store",
   "version": "1.0.0",
   "private": true,
-  "description": "Lifetime quiet premium clothing brand storefront + authenticity verification on Cloudflare Pages and D1.",
+  "description": "Lifetime production-ready clothing store with private admin, R2 images, D1 data, and Paystack checkout.",
   "scripts": {
     "dev": "wrangler pages dev public",
     "deploy": "wrangler pages deploy public",

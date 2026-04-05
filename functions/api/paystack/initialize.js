@@ -107,7 +107,7 @@ export async function onRequestPost(context) {
     },
     body: JSON.stringify({
       email,
-      amount: Math.round(total * 100), // kobo
+      amount: Math.round(total * 100),
       currency: "NGN",
       reference,
       callback_url: callbackUrl,
