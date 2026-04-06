@@ -39,6 +39,17 @@
       <div class="eyebrow">Verification</div>
       <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Verify an original Lifetime item</h1>
       <p class="lead">Enter the serial code from your garment label or scan the item QR code to confirm authenticity.</p>
+      <div class="scanner-panel">
+        <div class="inline-actions wrap">
+          <button class="btn btn-soft" type="button" data-start-scanner>Scan label live</button>
+          <button class="btn btn-soft hide" type="button" data-stop-scanner>Stop scanner</button>
+        </div>
+        <div class="scanner-note muted" data-scanner-note>Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.</div>
+        <div class="scanner-shell hide" data-scanner-shell>
+          <video playsinline autoplay muted data-scanner-video></video>
+          <canvas class="hide" data-scanner-canvas></canvas>
+        </div>
+      </div>
       <form data-verify-form>
         <label>Authenticity code
           <input name="code" placeholder="LT-26-POL-BLK-M-000001" required>

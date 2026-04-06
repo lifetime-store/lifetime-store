@@ -42,7 +42,7 @@ async function prefillCustomer() {
   if (!form.customer_name.value) form.customer_name.value = customer.full_name || '';
   const tierMount = document.querySelector('[data-tier-note]');
   if (tierMount && customer.tier_name) {
-    tierMount.innerHTML = `<div class="notice notice-success">Buyer tier: <strong>${customer.tier_name}</strong>${Number(customer.tier_discount_percent || 0) ? ` · auto discount ${customer.tier_discount_percent}%` : ''}</div>`;
+    tierMount.innerHTML = `<div class="notice notice-success">Buyer rank: <strong>${customer.tier_name}</strong>${Number(customer.tier_discount_percent || 0) ? ` · auto discount ${customer.tier_discount_percent}%` : ''}</div>`;
     checkoutContext.tierDiscount = Math.round((checkoutContext.subtotal * Number(customer.tier_discount_percent || 0) / 100) * 100) / 100;
     await updateTotals();
   }

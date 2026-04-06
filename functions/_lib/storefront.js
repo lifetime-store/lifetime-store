@@ -76,12 +76,48 @@ export async function getActivePromotion(env) {
 }
 
 export function loyaltyTierFromSpend(spend = 0, orders = 0) {
-  const total = Number(spend || 0);
   const paidOrders = Number(orders || 0);
-  if (total >= 500000 || paidOrders >= 15) return { tier: 'Black', discountPercent: 15 };
-  if (total >= 250000 || paidOrders >= 8) return { tier: 'Gold', discountPercent: 10 };
-  if (total >= 100000 || paidOrders >= 4) return { tier: 'Silver', discountPercent: 6 };
-  return { tier: 'Classic', discountPercent: 0 };
+  if (paidOrders >= 160) return { tier: 'Star 5', discountPercent: 10, minOrders: 160, maxOrders: null, level: 5 };
+  if (paidOrders >= 80) return { tier: 'Star 4', discountPercent: 7, minOrders: 80, maxOrders: 159, level: 4 };
+  if (paidOrders >= 40) return { tier: 'Star 3', discountPercent: 5, minOrders: 40, maxOrders: 79, level: 3 };
+  if (paidOrders >= 20) return { tier: 'Star 2', discountPercent: 2, minOrders: 20, maxOrders: 39, level: 2 };
+  return { tier: 'Star 1', discountPercent: 0, minOrders: 0, maxOrders: 19, level: 1 };
+}
+
+export function loyaltyTierProgress(orders = 0) {
+  const paidOrders = Number(orders || 0);
+  const current = loyaltyTierFromSpend(0, paidOrders);
+  const ladder = [
+    { tier: 'Star 1', threshold: 0, discountPercent: 0, level: 1 },
+    { tier: 'Star 2', threshold: 20, discountPercent: 2, level: 2 },
+    { tier: 'Star 3', threshold: 40, discountPercent: 5, level: 3 },
+    { tier: 'Star 4', threshold: 80, discountPercent: 7, level: 4 },
+    { tier: 'Star 5', threshold: 160, discountPercent: 10, level: 5 }
+  ];
+  const next = ladder.find((entry) => entry.threshold > paidOrders) || null;
+  if (!next) {
+    return {
+      current,
+      next: null,
+      ordersToNext: 0,
+      progressPercent: 100,
+      currentOrders: paidOrders,
+      windowStart: 160,
+      windowEnd: 160
+    };
+  }
+  const currentThreshold = ladder[Math.max(0, current.level - 1)].threshold;
+  const span = Math.max(1, next.threshold - currentThreshold);
+  const progress = Math.max(0, Math.min(100, ((paidOrders - currentThreshold) / span) * 100));
+  return {
+    current,
+    next,
+    ordersToNext: Math.max(0, next.threshold - paidOrders),
+    progressPercent: Math.round(progress),
+    currentOrders: paidOrders,
+    windowStart: currentThreshold,
+    windowEnd: next.threshold
+  };
 }
 
 export async function ensureCustomerProfile(env, customerId) {

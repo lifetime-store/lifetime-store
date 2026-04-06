@@ -1,11 +1,21 @@
-
 import { apiGet, apiPost, escapeHtml, qs } from "./api.js";
+
+let scannerStream = null;
+let scannerFrame = null;
+let detector = null;
 
 function statusMarkup(authenticity) {
   if (authenticity === "verified") return `<span class="status status-verified">Authentic</span>`;
   if (authenticity === "pending_activation") return `<span class="status status-pending">Pending Activation</span>`;
   if (authenticity === "blocked") return `<span class="status status-void">Blocked</span>`;
   return `<span class="status status-void">Unavailable</span>`;
+}
+
+function setScannerNote(message, variant = "") {
+  const note = document.querySelector("[data-scanner-note]");
+  if (!note) return;
+  note.className = `scanner-note muted ${variant ? `notice notice-${variant}` : ''}`.trim();
+  note.textContent = message;
 }
 
 async function verifyCode(code) {
@@ -65,9 +75,70 @@ async function handleSubmit(event) {
   await verifyCode(code);
 }
 
+function stopScanner() {
+  if (scannerFrame) cancelAnimationFrame(scannerFrame);
+  scannerFrame = null;
+  if (scannerStream) {
+    scannerStream.getTracks().forEach((track) => track.stop());
+    scannerStream = null;
+  }
+  document.querySelector('[data-scanner-shell]')?.classList.add('hide');
+  document.querySelector('[data-stop-scanner]')?.classList.add('hide');
+  setScannerNote('Scanner stopped. You can start it again or enter the code manually.');
+}
+
+async function scanLoop() {
+  const video = document.querySelector('[data-scanner-video]');
+  const canvas = document.querySelector('[data-scanner-canvas]');
+  if (!video || !canvas || !detector) return;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const tick = async () => {
+    if (!scannerStream) return;
+    if (video.readyState >= 2) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const barcodes = await detector.detect(canvas);
+        const value = barcodes?.[0]?.rawValue?.trim();
+        if (value) {
+          stopScanner();
+          setScannerNote('Code captured. Running authenticity check…', 'success');
+          await verifyCode(value);
+          return;
+        }
+      } catch {}
+    }
+    scannerFrame = requestAnimationFrame(tick);
+  };
+  scannerFrame = requestAnimationFrame(tick);
+}
+
+async function startScanner() {
+  if (!('BarcodeDetector' in window) || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+    setScannerNote('Live scanning is not supported on this browser yet. Please enter the code manually or open the page in a modern mobile browser.', 'warning');
+    return;
+  }
+  try {
+    detector = new window.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'upc_a'] });
+    scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    const video = document.querySelector('[data-scanner-video]');
+    video.srcObject = scannerStream;
+    await video.play();
+    document.querySelector('[data-scanner-shell]')?.classList.remove('hide');
+    document.querySelector('[data-stop-scanner]')?.classList.remove('hide');
+    setScannerNote('Camera is live. Point it at the Lifetime label QR or barcode.');
+    await scanLoop();
+  } catch (error) {
+    setScannerNote('Camera access was denied or unavailable. You can still verify with the printed code manually.', 'danger');
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("[data-verify-form]");
   form?.addEventListener("submit", handleSubmit);
+  document.querySelector('[data-start-scanner]')?.addEventListener('click', startScanner);
+  document.querySelector('[data-stop-scanner]')?.addEventListener('click', stopScanner);
 
   const code = qs("code");
   if (code) verifyCode(code);

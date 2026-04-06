@@ -222,7 +222,7 @@
                   <label>Value <input name="discount_value" type="number" step="0.01" value="10"></label>
                   <label>Min subtotal <input name="min_subtotal" type="number" value="0"></label>
                   <label>Tier gate
-                    <select name="tier_gate"><option value="">All buyers</option><option value="Classic">Classic</option><option value="Silver">Silver</option><option value="Gold">Gold</option><option value="Black">Black</option></select>
+                    <select name="tier_gate"><option value="">All buyers</option><option value="Star 1">Star 1</option><option value="Star 2">Star 2</option><option value="Star 3">Star 3</option><option value="Star 4">Star 4</option><option value="Star 5">Star 5</option></select>
                   </label>
                 </div>
                 <div class="form-grid">
@@ -236,8 +236,41 @@
               </form>
             </article>
 
+
             <article class="panel">
-              <div class="eyebrow">7 · Upload cloth photos</div>
+              <div class="eyebrow">Team roles and access</div>
+              <div data-staff-notice></div>
+              <form data-staff-form>
+                <input type="hidden" name="staff_id">
+                <div class="form-grid">
+                  <label>Full name <input name="full_name" placeholder="Operations Manager"></label>
+                  <label>Email <input name="email" type="email" placeholder="ops@lifetime-store.shop"></label>
+                  <label>Role
+                    <select name="role">
+                      <option value="operations">Operations</option>
+                      <option value="inventory">Inventory</option>
+                      <option value="support">Support</option>
+                      <option value="marketing">Marketing</option>
+                    </select>
+                  </label>
+                  <label>Status
+                    <select name="status">
+                      <option value="active">active</option>
+                      <option value="paused">paused</option>
+                    </select>
+                  </label>
+                </div>
+                <label>Access note <input name="access_scope" placeholder="Products, stock, order status"></label>
+                <div class="inline-actions wrap">
+                  <button class="btn btn-primary" type="submit">Save staff access</button>
+                  <button class="btn btn-soft" type="button" data-staff-reset>Reset</button>
+                </div>
+              </form>
+              <p class="muted" style="margin-top:0.9rem;">Owner login stays separate. These staff records help you assign light access and keep operations safer.</p>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">8 · Upload cloth photos</div>
               <div data-images-notice></div>
               <form data-image-form>
                 <div class="form-grid">
@@ -295,7 +328,13 @@
 
             <article class="panel">
               <div class="eyebrow">Buyer insights and premium levels</div>
+              <div class="notice">Star 1 starts at 0 successful orders. Star 2 starts at 20, Star 3 at 40, Star 4 at 80, and Star 5 at 160. Auto discounts are 0%, 2%, 5%, 7%, and 10%.</div>
               <div data-admin-customers class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Staff access board</div>
+              <div data-admin-staff class="stack"></div>
             </article>
 
           </div>

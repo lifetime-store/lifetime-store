@@ -18,6 +18,7 @@ const state = {
   promotions: [],
   promoCodes: [],
   customers: [],
+  staff: [],
   selectedProductId: null,
   selectedImages: []
 };
@@ -125,6 +126,8 @@ function variantCard(variant) {
         <span class="pill">Stock ${Number(variant.stock || 0)}</span>
         <button class="btn btn-soft" type="button" data-stock-adjust="${variant.id}" data-delta="-1">-1</button>
         <button class="btn btn-soft" type="button" data-stock-adjust="${variant.id}" data-delta="5">+5</button>
+        <button class="btn btn-soft" type="button" data-stock-adjust="${variant.id}" data-delta="10">+10</button>
+        <button class="btn btn-soft" type="button" data-set-stock="${variant.id}">Set stock</button>
         <button class="btn btn-soft" type="button" data-edit-variant="${variant.id}">Edit</button>
         <button class="btn btn-danger" type="button" data-delete-variant="${variant.id}">Delete</button>
       </div>
@@ -167,16 +170,44 @@ function promoCodeCard(code) {
 }
 
 function customerCard(customer) {
+  const currentLevel = Number(customer.rank_level || 1);
+  const stars = Array.from({ length: 5 }, (_, index) => `<span class="star-dot ${index < currentLevel ? 'active' : ''}">★</span>`).join('');
   return `
-    <article class="simple-row simple-row-spaced">
+    <article class="simple-row simple-row-spaced customer-tier-card">
       <div>
         <strong>${escapeHtml(customer.full_name || customer.email)}</strong>
-        <div class="muted">${escapeHtml(customer.email)} · ${customer.paid_orders} paid order(s)</div>
+        <div class="muted">${escapeHtml(customer.email)} · ${customer.paid_orders} successful paid order(s)</div>
         <div class="muted">${formatNGN(customer.lifetime_spend)} spend · ${customer.loyalty_points} points</div>
+        <div class="progress-track compact"><span style="width:${Number(customer.rank_progress_percent || 0)}%"></span></div>
+        <div class="muted">${customer.next_tier_name ? `${Number(customer.next_tier_orders_needed || 0)} order(s) to ${escapeHtml(customer.next_tier_name)}` : 'Top rank unlocked'}</div>
       </div>
       <div class="admin-actions compact wrap">
         <span class="pill">${escapeHtml(customer.tier_name)}</span>
         <span class="pill">-${Number(customer.tier_discount_percent || 0)}%</span>
+        <div class="star-row mini">${stars}</div>
+      </div>
+    </article>
+  `;
+}
+
+function staffCard(staff) {
+  const roleMap = {
+    operations: 'Products, orders, stock',
+    inventory: 'Batches, labels, stock in/out',
+    support: 'Customer lookup and verification',
+    marketing: 'Promotions and campaign review'
+  };
+  return `
+    <article class="simple-row simple-row-spaced">
+      <div>
+        <strong>${escapeHtml(staff.full_name)}</strong>
+        <div class="muted">${escapeHtml(staff.email)} · ${escapeHtml(staff.role)}</div>
+        <div class="muted">${escapeHtml(staff.access_scope || roleMap[staff.role] || '')}</div>
+      </div>
+      <div class="admin-actions compact wrap">
+        <span class="pill">${escapeHtml(staff.status || 'active')}</span>
+        <button class="btn btn-soft" type="button" data-edit-staff="${staff.id}">Edit</button>
+        <button class="btn btn-danger" type="button" data-delete-staff="${staff.id}">Delete</button>
       </div>
     </article>
   `;
@@ -500,6 +531,8 @@ function fillVariantForm(variant) {
   if (form.compare_at_ngn) form.compare_at_ngn.value = variant.compare_at_ngn ?? '';
   if (form.compare_at_usd) form.compare_at_usd.value = variant.compare_at_usd ?? '';
   form.active.checked = Boolean(variant.active);
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  form.sku.focus();
 }
 
 function bindProductActions() {
@@ -544,6 +577,18 @@ function bindProductActions() {
 function bindVariantActions() {
   document.querySelectorAll("[data-edit-variant]").forEach((button) => {
     button.onclick = () => fillVariantForm(state.variants.find((entry) => Number(entry.id) === Number(button.dataset.editVariant)));
+  });
+
+  document.querySelectorAll('[data-set-stock]').forEach((button) => {
+    button.onclick = async () => {
+      const id = Number(button.dataset.setStock);
+      const current = state.variants.find((entry) => Number(entry.id) === id);
+      const next = window.prompt('Enter the exact available stock for this variant.', String(current?.stock || 0));
+      if (next === null) return;
+      const result = await apiPost('/api/admin/variants', { action: 'set_stock', id, stock: Number(next || 0) }, true);
+      notice('[data-variant-notice]', escapeHtml(result.message || 'Updated.'), result.ok ? 'success' : 'danger');
+      if (result.ok) await Promise.all([loadVariants(), refreshSummaryOnly()]);
+    };
   });
 
   document.querySelectorAll('[data-stock-adjust]').forEach((button) => {
@@ -878,6 +923,37 @@ function bindForms() {
     }
   });
 
+
+  document.querySelector('[data-staff-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = {
+      id: form.staff_id.value || null,
+      full_name: form.full_name.value.trim(),
+      email: form.email.value.trim(),
+      role: form.role.value,
+      status: form.status.value,
+      access_scope: form.access_scope.value.trim()
+    };
+    const result = await apiPost('/api/admin/staff', payload, true);
+    notice('[data-staff-notice]', escapeHtml(result.message || 'Updated.'), result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      form.reset();
+      form.staff_id.value = '';
+      form.role.value = 'operations';
+      form.status.value = 'active';
+      await loadStaff();
+    }
+  });
+
+  document.querySelector('[data-staff-reset]')?.addEventListener('click', () => {
+    const form = document.querySelector('[data-staff-form]');
+    if (!form) return;
+    form.reset();
+    form.staff_id.value = '';
+    form.role.value = 'operations';
+    form.status.value = 'active';
+  });
 
   document.querySelector("[data-image-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();

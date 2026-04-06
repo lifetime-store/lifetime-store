@@ -51,3 +51,8 @@ For username/password admin login add:
 The storefront now uses Cloudflare country detection to choose a local preview currency.
 Checkout still settles in NGN for safety and consistency.
 You can adjust conversion rates later from the `site_settings` table.
+
+
+## 0006 upgrade
+Run `migrations/0006_star_ranks_scanner_staff.sql` after uploading this package.
+This adds Star 1–5 loyalty settings, staff access records, and audit-log foundations.

@@ -44,6 +44,14 @@ export async function onRequestPost(context) {
     return ok({ message: delta > 0 ? `Added ${delta} units.` : `Removed ${Math.abs(delta)} units.` });
   }
 
+  if (action === 'set_stock') {
+    const id = toInt(body.id);
+    const stock = toInt(body.stock, 0);
+    if (!id && id !== 0) return error('Variant id is required.', 400);
+    await context.env.DB.prepare(`UPDATE variants SET stock = MAX(0, ? ) WHERE id = ?`).bind(stock, id).run();
+    return ok({ message: `Available stock set to ${Math.max(0, stock)}.` });
+  }
+
   if (action === 'delete') {
     const id = toInt(body.id);
     if (!id) return error('Variant id is required.', 400);

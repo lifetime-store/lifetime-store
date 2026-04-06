@@ -111,12 +111,29 @@ async function renderAccount() {
 
   const cartResult = await apiGet('/api/cart');
   const itemCount = Array.isArray(cartResult.items) ? cartResult.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0) : 0;
+  const currentLevel = Number(customer.rank_level || 1);
+  const nextTier = customer.next_tier_name || 'Star 5';
+  const ordersToNext = Number(customer.next_tier_orders_needed || 0);
+  const progress = Math.max(0, Math.min(100, Number(customer.rank_progress_percent || 0)));
+  const stars = Array.from({ length: 5 }, (_, index) => `<span class="star-dot ${index < currentLevel ? 'active' : ''}">★</span>`).join('');
   mount.innerHTML = `
     <div class="notice notice-success">Signed in successfully.</div>
+    <div class="rank-card">
+      <div class="rank-top">
+        <div>
+          <div class="eyebrow">Buyer rank</div>
+          <h3>${customer.tier_name || 'Star 1'}</h3>
+          <p class="muted">${Number(customer.tier_discount_percent || 0) ? `Auto discount ${customer.tier_discount_percent}% on eligible checkout totals.` : 'Build your order history to unlock automatic buyer discounts.'}</p>
+        </div>
+        <div class="star-row">${stars}</div>
+      </div>
+      <div class="progress-track"><span style="width:${progress}%"></span></div>
+      <div class="rank-meta muted">${ordersToNext > 0 ? `${ordersToNext} more successful order${ordersToNext === 1 ? '' : 's'} to reach ${nextTier}.` : 'You are at the highest current rank.'}</div>
+    </div>
     <div class="details-list">
       <article><strong>Name</strong><p class="muted">${customer.full_name || 'Not set yet'}</p></article>
       <article><strong>Email</strong><p class="muted">${customer.email}</p></article>
-      <article><strong>Premium level</strong><p class="muted">${customer.tier_name || 'Classic'}${Number(customer.tier_discount_percent || 0) ? ` · auto discount ${customer.tier_discount_percent}%` : ''}</p></article>
+      <article><strong>Successful orders</strong><p class="muted">${Number(customer.paid_orders || 0)} completed paid order(s)</p></article>
       <article><strong>Loyalty points</strong><p class="muted">${Number(customer.loyalty_points || 0)} point(s)</p></article>
       <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article>
     </div>

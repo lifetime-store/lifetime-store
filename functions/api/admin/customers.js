@@ -1,6 +1,6 @@
 import { requireAdmin } from '../../_lib/auth.js';
 import { ok, optionsResponse } from '../../_lib/response.js';
-import { loyaltyTierFromSpend } from '../../_lib/storefront.js';
+import { loyaltyTierFromSpend, loyaltyTierProgress } from '../../_lib/storefront.js';
 
 export async function onRequestOptions() {
   return optionsResponse();
@@ -27,13 +27,18 @@ export async function onRequestGet(context) {
 
   const customers = (results || []).map((row) => {
     const fallback = loyaltyTierFromSpend(row.lifetime_spend, row.paid_orders);
+    const progress = loyaltyTierProgress(row.paid_orders);
     return {
       ...row,
       tier_name: row.tier_name || fallback.tier,
       tier_discount_percent: Number(row.tier_discount_percent || fallback.discountPercent || 0),
       lifetime_spend: Number(row.lifetime_spend || 0),
       paid_orders: Number(row.paid_orders || 0),
-      loyalty_points: Number(row.loyalty_points || 0)
+      loyalty_points: Number(row.loyalty_points || 0),
+      next_tier_name: progress.next?.tier || null,
+      next_tier_orders_needed: Number(progress.ordersToNext || 0),
+      rank_progress_percent: Number(progress.progressPercent || 0),
+      rank_level: Number(progress.current?.level || fallback.level || 1)
     };
   });
 
