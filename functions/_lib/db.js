@@ -116,13 +116,15 @@ export async function getBatchWithProduct(env, batchId) {
 }
 
 export async function dashboardSummary(env) {
-  const [products, batches, codes, issues, orders, lowStock] = await Promise.all([
+  const [products, batches, codes, issues, orders, lowStock, pendingActivation, activeBatches] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS total FROM products`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM batches`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM issues WHERE status = 'open'`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM orders`).first(),
-    env.DB.prepare(`SELECT COUNT(*) AS total FROM variants WHERE active = 1 AND stock <= 5`).first()
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM variants WHERE active = 1 AND stock <= 5`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes WHERE status IN ('generated','printed','attached','received','draft')`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM batches WHERE status = 'active'`).first()
   ]);
 
   return {
@@ -131,6 +133,8 @@ export async function dashboardSummary(env) {
     codes: codes?.total || 0,
     openIssues: issues?.total || 0,
     orders: orders?.total || 0,
-    lowStock: lowStock?.total || 0
+    lowStock: lowStock?.total || 0,
+    pendingActivation: pendingActivation?.total || 0,
+    activeBatches: activeBatches?.total || 0
   };
 }

@@ -14,7 +14,7 @@ const SECURITY_HEADERS = {
     "frame-ancestors 'none'",
     "img-src 'self' data: blob: https:",
     "style-src 'self' 'unsafe-inline'",
-    "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.paystack.co",
+    "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://js.paystack.co https://cdnjs.cloudflare.com",
     "connect-src 'self' https://api.paystack.co https://api.resend.com https://challenges.cloudflare.com https://*.r2.dev",
     "font-src 'self' data:",
     "frame-src https://checkout.paystack.com https://js.paystack.co https://challenges.cloudflare.com",

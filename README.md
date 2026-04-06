@@ -1,56 +1,23 @@
-# Lifetime Store — Upgraded Production Package
+# Lifetime Store — Label-First Production Upgrade
 
-This upgraded package includes:
-- premium storefront refresh
-- Paystack checkout initialization and verification
-- D1 product, variants, orders, and verification code support
-- private admin APIs with R2 image upload support
-- customer account system (register, login, logout, account page)
-- saved cart sync across devices for signed-in customers
-- support and orders email wiring
+This package keeps your working storefront and customer account system, then upgrades the admin side for a more realistic manufacturing workflow.
 
-## Required Cloudflare secrets
-Set these in Workers & Pages → lifetime-store → Settings → Variables and Secrets:
-- ADMIN_TOKEN
-- PAYSTACK_SECRET_KEY
-- RESEND_API_KEY
+## What is new
+- label-first production workflow inside `Studio LT`
+- create product → add variants → create batch → generate inactive labels → print/attach → receive → activate
+- printable batch label sheet at `/print-labels.html?batch_id=...`
+- admin sign-in can now use **username + password** or your fallback admin token
+- verification page now distinguishes between:
+  - active authentic items
+  - generated but not yet activated items
+  - blocked / voided items
 
-## Required bindings
-Already expected by this package:
-- D1 database binding: `DB`
-- R2 bucket binding: `BUCKET`
+## Cloudflare settings required
+Keep these bindings active:
+- `DB`
+- `BUCKET`
 
-## Migrations to run
-Run these against `lifetime_store_db`:
-1. `migrations/0001_init.sql`
-2. `migrations/0002_admin_upgrade.sql`
-3. `migrations/0003_accounts_cart.sql`
-
-## Important notes
-- Public logo file is included at `public/assets/logo.png`
-- Customer session uses a secure HTTP-only cookie
-- Signed-in carts sync through `/api/cart`
-- After deploy, test: register, login, add to cart, checkout, paystack callback, verify page, support form
-
-## Paystack webhook
-Use:
-- `https://lifetime-store.shop/api/paystack/webhook`
-
-## Git / Pages setup
-- Build command: leave empty if already using static Pages deployment
-- Build output directory: `public`
-- Root directory: repo root
-
-
-## Account setup required
-To make register and login work, run the D1 migration file `migrations/0003_accounts_cart.sql` after upload.
-
-## Cloudflare bindings and secrets
-Required bindings:
-- `DB` → your D1 database
-- `BUCKET` → your R2 bucket
-
-Required secrets/plaintext values:
+Keep these vars/secrets active:
 - `PAYSTACK_SECRET_KEY`
 - `PAYSTACK_PUBLIC_KEY`
 - `ADMIN_TOKEN`
@@ -61,10 +28,27 @@ Required secrets/plaintext values:
 - `MAIL_FROM_EMAIL`
 - `BRAND_NAME`
 
-## Quick auth test
-After deploy:
-1. Open `/register.html`
-2. Create a new account
-3. Open `/account.html`
-4. Log out
-5. Open `/login.html` and sign back in
+Add these for easier admin access:
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+
+## D1 migrations to run
+Run in this order:
+1. `migrations/0001_init.sql`
+2. `migrations/0002_admin_upgrade.sql`
+3. `migrations/0003_accounts_cart.sql`
+4. `migrations/0004_label_first_workflow.sql`
+
+## How the label-first workflow works
+1. Create or edit the product draft
+2. Add variants
+3. Create a batch
+4. Generate inactive labels for that batch
+5. Open the printable label sheet and print for manufacturing
+6. Mark the batch as printed / attached / received
+7. Activate the batch when goods are ready for sale
+
+## Notes
+- The batch label page uses QR + Code 128 rendering through CDN scripts, so keep the default security policy in this package.
+- Admin APIs still support `ADMIN_TOKEN`, but you can now sign in with username/password and receive a secure admin session cookie.
+- Customer account, cart sync, checkout, support, and verify flows remain in the package.

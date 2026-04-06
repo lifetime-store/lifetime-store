@@ -4,6 +4,7 @@ import { apiGet, apiPost, escapeHtml, qs } from "./api.js";
 function statusMarkup(authenticity) {
   if (authenticity === "verified") return `<span class="status status-verified">Authentic</span>`;
   if (authenticity === "pending_activation") return `<span class="status status-pending">Pending Activation</span>`;
+  if (authenticity === "blocked") return `<span class="status status-void">Blocked</span>`;
   return `<span class="status status-void">Unavailable</span>`;
 }
 

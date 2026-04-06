@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print Labels — Lifetime</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+</head>
+<body class="labels-body">
+  <main class="section">
+    <div class="container">
+      <div class="toolbar-panel panel no-print">
+        <div>
+          <div class="eyebrow">Manufacturing labels</div>
+          <h1 style="margin:0.2rem 0 0;">Batch print sheet</h1>
+          <p class="muted">QR is for customer authenticity after activation. Barcode is for your internal handling.</p>
+        </div>
+        <div class="inline-actions wrap">
+          <button class="btn btn-primary" type="button" onclick="window.print()">Print labels</button>
+        </div>
+      </div>
+      <div data-label-sheet class="label-sheet"></div>
+    </div>
+  </main>
+  <script type="module" src="/assets/js/labels.js"></script>
+</body>
+</html>
