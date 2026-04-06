@@ -40,3 +40,31 @@ Use:
 - Build command: leave empty if already using static Pages deployment
 - Build output directory: `public`
 - Root directory: repo root
+
+
+## Account setup required
+To make register and login work, run the D1 migration file `migrations/0003_accounts_cart.sql` after upload.
+
+## Cloudflare bindings and secrets
+Required bindings:
+- `DB` → your D1 database
+- `BUCKET` → your R2 bucket
+
+Required secrets/plaintext values:
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_PUBLIC_KEY`
+- `ADMIN_TOKEN`
+- `RESEND_API_KEY`
+- `R2_PUBLIC_BASE_URL`
+- `SUPPORT_EMAIL`
+- `ORDERS_EMAIL`
+- `MAIL_FROM_EMAIL`
+- `BRAND_NAME`
+
+## Quick auth test
+After deploy:
+1. Open `/register.html`
+2. Create a new account
+3. Open `/account.html`
+4. Log out
+5. Open `/login.html` and sign back in

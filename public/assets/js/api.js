@@ -3,7 +3,23 @@ const ADMIN_TOKEN_KEY = 'lifetime_admin_token';
 const CUSTOMER_KEY = 'lifetime_customer';
 
 async function readJsonSafe(res) {
-  try { return await res.json(); } catch { return { ok: false, message: 'Invalid server response.' }; }
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      const data = await res.json();
+      if (typeof data.ok === 'undefined') data.ok = res.ok;
+      data.status = res.status;
+      return data;
+    } catch {
+      return { ok: false, status: res.status, message: 'Invalid server response.' };
+    }
+  }
+  try {
+    const text = await res.text();
+    return { ok: res.ok, status: res.status, message: text || (res.ok ? 'Request completed.' : 'Request failed.') };
+  } catch {
+    return { ok: false, status: res.status, message: 'Request failed.' };
+  }
 }
 
 export async function apiGet(url, admin = false) {

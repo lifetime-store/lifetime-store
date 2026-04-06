@@ -1,48 +1,79 @@
-import { apiGet, apiPost, clearCart, getCustomer, loadCustomer, saveCart, setCustomer, syncCartFromServer } from './api.js';
+import { apiGet, apiPost, clearCart, loadCustomer, saveCart, setCustomer, syncCartFromServer, qs } from './api.js';
 
 function setNotice(html) {
   const el = document.querySelector('[data-auth-notice]');
   if (el) el.innerHTML = html;
 }
 
+function getFormValue(form, name) {
+  return String(new FormData(form).get(name) || '').trim();
+}
+
+function setButtonState(button, busy, busyText, idleText) {
+  if (!button) return;
+  button.disabled = busy;
+  button.textContent = busy ? busyText : idleText;
+}
+
 async function handleRegister(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const button = form.querySelector('button[type="submit"]');
-  button.disabled = true;
+  setNotice('');
+  setButtonState(button, true, 'Creating account...', 'Create account');
+
   const payload = {
-    full_name: form.full_name.value,
-    email: form.email.value,
-    password: form.password.value
+    full_name: getFormValue(form, 'full_name'),
+    email: getFormValue(form, 'email').toLowerCase(),
+    password: getFormValue(form, 'password')
   };
-  const result = await apiPost('/api/auth/register', payload);
-  if (result.ok && result.customer) {
-    setCustomer(result.customer);
-    await syncCartFromServer();
-    window.location.href = '/account.html?created=1';
+
+  if (!payload.email || !payload.password) {
+    setNotice(`<div class="notice notice-danger">Email and password are required.</div>`);
+    setButtonState(button, false, 'Creating account...', 'Create account');
     return;
   }
-  setNotice(`<div class="notice notice-danger">${result.message || 'Could not create account.'}</div>`);
-  button.disabled = false;
+
+  try {
+    const result = await apiPost('/api/auth/register', payload);
+    if (result.ok && result.customer) {
+      setCustomer(result.customer);
+      await syncCartFromServer();
+      window.location.href = '/account.html?created=1';
+      return;
+    }
+    const missingTables = result.message && /no such table|customers|customer_sessions|cart_items/i.test(result.message);
+    setNotice(`<div class="notice notice-danger">${missingTables ? 'Account tables are not ready yet. Run migration 0003_accounts_cart.sql in D1, then try again.' : (result.message || 'Could not create account.')}</div>`);
+  } catch (error) {
+    setNotice(`<div class="notice notice-danger">Could not create account right now. Please try again.</div>`);
+  }
+  setButtonState(button, false, 'Creating account...', 'Create account');
 }
 
 async function handleLogin(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const button = form.querySelector('button[type="submit"]');
-  button.disabled = true;
-  const result = await apiPost('/api/auth/login', {
-    email: form.email.value,
-    password: form.password.value
-  });
-  if (result.ok && result.customer) {
-    setCustomer(result.customer);
-    await syncCartFromServer();
-    window.location.href = '/account.html?login=1';
-    return;
+  setNotice('');
+  setButtonState(button, true, 'Signing in...', 'Sign in');
+
+  try {
+    const result = await apiPost('/api/auth/login', {
+      email: getFormValue(form, 'email').toLowerCase(),
+      password: getFormValue(form, 'password')
+    });
+    if (result.ok && result.customer) {
+      setCustomer(result.customer);
+      await syncCartFromServer();
+      window.location.href = '/account.html?login=1';
+      return;
+    }
+    const missingTables = result.message && /no such table|customers|customer_sessions|cart_items/i.test(result.message);
+    setNotice(`<div class="notice notice-danger">${missingTables ? 'Account tables are not ready yet. Run migration 0003_accounts_cart.sql in D1, then try again.' : (result.message || 'Sign in failed.')}</div>`);
+  } catch (error) {
+    setNotice(`<div class="notice notice-danger">Sign in failed. Please try again.</div>`);
   }
-  setNotice(`<div class="notice notice-danger">${result.message || 'Sign in failed.'}</div>`);
-  button.disabled = false;
+  setButtonState(button, false, 'Signing in...', 'Sign in');
 }
 
 async function handleLogout() {
@@ -51,6 +82,15 @@ async function handleLogout() {
   await clearCart();
   saveCart([]);
   window.location.href = '/login.html?logout=1';
+}
+
+function renderQueryNotice() {
+  const created = qs('created');
+  const login = qs('login');
+  const logout = qs('logout');
+  if (created === '1') setNotice(`<div class="notice notice-success">Your account was created successfully.</div>`);
+  if (login === '1') setNotice(`<div class="notice notice-success">Signed in successfully.</div>`);
+  if (logout === '1') setNotice(`<div class="notice notice-success">You have been logged out.</div>`);
 }
 
 async function renderAccount() {
@@ -88,6 +128,7 @@ async function renderAccount() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  renderQueryNotice();
   document.querySelector('[data-register-form]')?.addEventListener('submit', handleRegister);
   document.querySelector('[data-login-form]')?.addEventListener('submit', handleLogin);
   renderAccount();
