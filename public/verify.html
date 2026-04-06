@@ -43,10 +43,12 @@
         <div class="inline-actions wrap">
           <button class="btn btn-soft" type="button" data-start-scanner>Scan label live</button>
           <button class="btn btn-soft hide" type="button" data-stop-scanner>Stop scanner</button>
+          <label class="btn btn-soft" style="cursor:pointer;">Upload label photo<input class="hide" type="file" accept="image/*" capture="environment" data-scan-file></label>
         </div>
         <div class="scanner-note muted" data-scanner-note>Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.</div>
         <div class="scanner-shell hide" data-scanner-shell>
-          <video playsinline autoplay muted data-scanner-video></video>
+          <div id="lt-verify-reader" data-scanner-reader></div>
+          <video playsinline autoplay muted class="hide" data-scanner-video></video>
           <canvas class="hide" data-scanner-canvas></canvas>
         </div>
       </div>
@@ -77,6 +79,7 @@
     </div>
   </footer>
 
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
   <script type="module" src="/assets/js/api.js"></script>
   <script type="module" src="/assets/js/verify.js"></script>
 </body>

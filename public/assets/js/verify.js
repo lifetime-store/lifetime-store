@@ -1,8 +1,10 @@
-import { apiGet, apiPost, escapeHtml, qs } from "./api.js";
+
+import { apiGet, escapeHtml, qs, getStorefrontMeta } from "./api.js";
 
 let scannerStream = null;
 let scannerFrame = null;
 let detector = null;
+let html5Scanner = null;
 
 function statusMarkup(authenticity) {
   if (authenticity === "verified") return `<span class="status status-verified">Authentic</span>`;
@@ -75,16 +77,27 @@ async function handleSubmit(event) {
   await verifyCode(code);
 }
 
-function stopScanner() {
+async function stopScanner() {
   if (scannerFrame) cancelAnimationFrame(scannerFrame);
   scannerFrame = null;
   if (scannerStream) {
     scannerStream.getTracks().forEach((track) => track.stop());
     scannerStream = null;
   }
+  if (html5Scanner) {
+    try { await html5Scanner.stop(); } catch {}
+    try { await html5Scanner.clear(); } catch {}
+    html5Scanner = null;
+  }
+  detector = null;
   document.querySelector('[data-scanner-shell]')?.classList.add('hide');
   document.querySelector('[data-stop-scanner]')?.classList.add('hide');
-  setScannerNote('Scanner stopped. You can start it again or enter the code manually.');
+}
+
+async function handleCodeDetected(value) {
+  await stopScanner();
+  setScannerNote('Code captured. Running authenticity check…', 'success');
+  await verifyCode(value.trim());
 }
 
 async function scanLoop() {
@@ -102,9 +115,7 @@ async function scanLoop() {
         const barcodes = await detector.detect(canvas);
         const value = barcodes?.[0]?.rawValue?.trim();
         if (value) {
-          stopScanner();
-          setScannerNote('Code captured. Running authenticity check…', 'success');
-          await verifyCode(value);
+          await handleCodeDetected(value);
           return;
         }
       } catch {}
@@ -114,54 +125,80 @@ async function scanLoop() {
   scannerFrame = requestAnimationFrame(tick);
 }
 
-async function startScanner() {
-  if (!('BarcodeDetector' in window) || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-    setScannerNote('Live scanning is not supported on this browser yet. Please enter the code manually or open the page in a modern mobile browser.', 'warning');
-    return;
-  }
+async function startHtml5Scanner() {
+  if (!window.Html5Qrcode) throw new Error('html5-qrcode unavailable');
+  const reader = document.querySelector('[data-scanner-reader]');
+  if (!reader) throw new Error('Scanner mount unavailable');
+  document.querySelector('[data-scanner-shell]')?.classList.remove('hide');
+  document.querySelector('[data-stop-scanner]')?.classList.remove('hide');
+  html5Scanner = new window.Html5Qrcode(reader.id);
+  const config = { fps: 10, qrbox: { width: 220, height: 220 }, rememberLastUsedCamera: true };
   try {
-    detector = new window.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'upc_a'] });
-    scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
-    const video = document.querySelector('[data-scanner-video]');
-    video.srcObject = scannerStream;
-    await video.play();
-    document.querySelector('[data-scanner-shell]')?.classList.remove('hide');
-    document.querySelector('[data-stop-scanner]')?.classList.remove('hide');
-    setScannerNote('Camera is live. Point it at the Lifetime label QR or barcode.');
-    await scanLoop();
-  } catch (error) {
-    setScannerNote('Camera access was denied or unavailable. You can still verify with the printed code manually.', 'danger');
+    await html5Scanner.start({ facingMode: { exact: 'environment' } }, config, handleCodeDetected, () => {});
+  } catch {
+    await html5Scanner.start({ facingMode: 'environment' }, config, handleCodeDetected, () => {});
+  }
+  setScannerNote('Camera is live. Point it at the Lifetime QR or barcode label.');
+}
+
+async function startDetectorScanner() {
+  detector = new window.BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13', 'upc_a'] });
+  scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+  const video = document.querySelector('[data-scanner-video]');
+  video.classList.remove('hide');
+  document.querySelector('[data-scanner-shell]')?.classList.remove('hide');
+  document.querySelector('[data-stop-scanner]')?.classList.remove('hide');
+  video.srcObject = scannerStream;
+  await video.play();
+  setScannerNote('Camera is live. Point it at the Lifetime QR or barcode label.');
+  await scanLoop();
+}
+
+async function startScanner() {
+  try {
+    if (window.Html5Qrcode) {
+      await startHtml5Scanner();
+      return;
+    }
+    if ('BarcodeDetector' in window && navigator.mediaDevices?.getUserMedia) {
+      await startDetectorScanner();
+      return;
+    }
+    setScannerNote('Live scanning is not supported in this browser view. Open the page directly in Safari or Chrome, or upload a label photo below.', 'warning');
+  } catch {
+    setScannerNote('Camera access is unavailable in this browser view. Try Safari directly or upload a label photo instead.', 'warning');
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+async function handleScanFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!window.Html5Qrcode) {
+    setScannerNote('Image scan is not available here yet. Open the page in Safari or enter the code manually.', 'warning');
+    return;
+  }
+  try {
+    const scanner = new window.Html5Qrcode('lt-verify-reader');
+    const decoded = await scanner.scanFile(file, true);
+    setScannerNote('Label image scanned. Running authenticity check…', 'success');
+    await verifyCode(decoded.trim());
+  } catch {
+    setScannerNote('We could not read the label from that image. Try a clearer photo or enter the code manually.', 'danger');
+  } finally {
+    event.target.value = '';
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
   const form = document.querySelector("[data-verify-form]");
   form?.addEventListener("submit", handleSubmit);
-  document.querySelector('[data-start-scanner]')?.addEventListener('click', startScanner);
-  document.querySelector('[data-stop-scanner]')?.addEventListener('click', stopScanner);
+  document.querySelector('[data-start-scanner]')?.addEventListener('click', () => { startScanner(); });
+  document.querySelector('[data-stop-scanner]')?.addEventListener('click', () => { stopScanner(); setScannerNote('Scanner stopped. You can start it again or enter the code manually.'); });
+  document.querySelector('[data-scan-file]')?.addEventListener('change', handleScanFile);
+
+  const meta = await getStorefrontMeta();
+  if (meta.verifyScannerHint) setScannerNote(meta.verifyScannerHint);
 
   const code = qs("code");
   if (code) verifyCode(code);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const supportForm = document.querySelector("[data-support-form]");
-  if (!supportForm) return;
-
-  const serial = qs("serial");
-  if (serial) {
-    const serialField = supportForm.querySelector("[name='serial_code']");
-    if (serialField) serialField.value = serial;
-  }
-
-  supportForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const payload = Object.fromEntries(new FormData(supportForm).entries());
-    const result = await apiPost("/api/support", payload);
-    const notice = document.querySelector("[data-support-notice]");
-    notice.innerHTML = result.ok
-      ? `<div class="notice notice-success">Your message has been submitted.</div>`
-      : `<div class="notice notice-danger">${escapeHtml(result.message || "Submission failed.")}</div>`;
-    if (result.ok) supportForm.reset();
-  });
 });

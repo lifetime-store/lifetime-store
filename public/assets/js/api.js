@@ -90,7 +90,9 @@ export async function getStorefrontMeta(force = false) {
       locale: 'en-NG',
       usdRate: 1550,
       promotion: null,
-      storeNotice: ''
+      storeNotice: '',
+      storeNoticeBadge: 'Store notice',
+      verifyScannerHint: 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.'
     });
   }
   return storefrontMetaPromise;
@@ -231,8 +233,9 @@ export async function renderStorefrontBanner() {
       el.classList.add('hide');
       return;
     }
+    const badge = promo?.badge_text || meta.storeNoticeBadge || '';
     el.classList.remove('hide');
-    el.innerHTML = `<div class="container banner-inner"><strong>${promo?.badge_text ? escapeHtml(promo.badge_text) + ' · ' : ''}${parts.join(' ')}</strong></div>`;
+    el.innerHTML = `<div class="container banner-inner"><strong>${badge ? escapeHtml(badge) + ' · ' : ''}${parts.join(' ')}</strong></div>`;
   });
 }
 

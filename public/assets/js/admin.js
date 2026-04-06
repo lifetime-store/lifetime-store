@@ -19,6 +19,7 @@ const state = {
   promoCodes: [],
   customers: [],
   staff: [],
+  settings: {},
   selectedProductId: null,
   selectedImages: []
 };
@@ -390,6 +391,21 @@ function bindPromotionActions() {
 }
 
 
+async function loadSettings() {
+  const res = await apiGet('/api/admin/settings', true);
+  if (!res.ok) {
+    notice('[data-settings-notice]', escapeHtml(res.message || 'Could not load site settings.'), 'danger');
+    return;
+  }
+  state.settings = res.settings || {};
+  const form = document.querySelector('[data-settings-form]');
+  if (!form) return;
+  form.store_notice_badge.value = state.settings.store_notice_badge || 'Store notice';
+  form.store_notice.value = state.settings.store_notice || '';
+  form.verify_scanner_hint.value = state.settings.verify_scanner_hint || '';
+}
+
+
 async function refreshDashboard() {
   const summary = await apiGet("/api/admin/dashboard", true);
   if (!summary.ok) {
@@ -400,7 +416,7 @@ async function refreshDashboard() {
 
   showShell(true);
   renderSummary(summary.summary || {});
-  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders(), loadPromotions(), loadCustomers()]);
+  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders(), loadPromotions(), loadCustomers(), loadSettings()]);
 }
 
 async function loadProducts() {
@@ -922,6 +938,28 @@ function bindForms() {
       await loadPromotions();
     }
   });
+
+
+document.querySelector('[data-settings-form]')?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const payload = {
+    store_notice_badge: form.store_notice_badge.value.trim(),
+    store_notice: form.store_notice.value.trim(),
+    verify_scanner_hint: form.verify_scanner_hint.value.trim()
+  };
+  const result = await apiPost('/api/admin/settings', payload, true);
+  notice('[data-settings-notice]', escapeHtml(result.message || 'Saved.'), result.ok ? 'success' : 'danger');
+  if (result.ok) await loadSettings();
+});
+
+document.querySelector('[data-settings-reset]')?.addEventListener('click', () => {
+  const form = document.querySelector('[data-settings-form]');
+  if (!form) return;
+  form.store_notice_badge.value = state.settings.store_notice_badge || 'Store notice';
+  form.store_notice.value = state.settings.store_notice || '';
+  form.verify_scanner_hint.value = state.settings.verify_scanner_hint || '';
+});
 
 
   document.querySelector('[data-staff-form]')?.addEventListener('submit', async (event) => {

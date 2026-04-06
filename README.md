@@ -56,3 +56,13 @@ You can adjust conversion rates later from the `site_settings` table.
 ## 0006 upgrade
 Run `migrations/0006_star_ranks_scanner_staff.sql` after uploading this package.
 This adds Star 1–5 loyalty settings, staff access records, and audit-log foundations.
+
+
+## Scanner and banner upgrade
+
+This package adds:
+- a Safari-friendlier verify scanner using html5-qrcode fallback
+- upload-label-photo fallback on the verify page
+- a Sitewide Banner and Verify Scanner editor in Studio LT
+
+No new D1 migration is required for this upgrade because it uses the existing `site_settings` table.

@@ -37,6 +37,8 @@ export async function getStorefrontMeta(env, request) {
   const countryJson = await getSetting(env, 'country_currency_json', JSON.stringify(DEFAULT_COUNTRY_CURRENCY));
   const rateJson = await getSetting(env, 'usd_rates_json', JSON.stringify(DEFAULT_USD_RATES));
   const storeNotice = await getSetting(env, 'store_notice', 'Worldwide pricing preview adjusts to the shopper region. Final settlement is completed securely in NGN at checkout.');
+  const storeNoticeBadge = await getSetting(env, 'store_notice_badge', 'Store notice');
+  const verifyScannerHint = await getSetting(env, 'verify_scanner_hint', 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.');
 
   let countryCurrency = DEFAULT_COUNTRY_CURRENCY;
   let usdRates = DEFAULT_USD_RATES;
@@ -54,6 +56,8 @@ export async function getStorefrontMeta(env, request) {
     locale,
     usdRate: rate,
     storeNotice,
+    storeNoticeBadge,
+    verifyScannerHint,
     promotion
   };
 }
