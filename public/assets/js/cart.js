@@ -1,13 +1,11 @@
-
-import { clearCart, formatNGN, getCart, saveCart } from "./api.js";
+import { clearCart, formatNGN, getCart, removeCartItem, saveCartAndSync } from './api.js';
 
 function renderCart() {
-  const mount = document.querySelector("[data-cart-items]");
-  const totals = document.querySelector("[data-cart-total]");
+  const mount = document.querySelector('[data-cart-items]');
+  const totals = document.querySelector('[data-cart-total]');
   if (!mount) return;
 
   const cart = getCart();
-
   if (cart.length === 0) {
     mount.innerHTML = `<div class="empty-state">Your cart is empty.</div>`;
     if (totals) totals.textContent = formatNGN(0);
@@ -23,47 +21,40 @@ function renderCart() {
         <button class="btn btn-soft" data-cart-minus="${index}">-</button>
         <span class="pill">${item.quantity}</span>
         <button class="btn btn-soft" data-cart-plus="${index}">+</button>
-        <button class="btn btn-danger" data-cart-remove="${index}">Remove</button>
+        <button class="btn btn-danger" data-cart-remove="${item.key}">Remove</button>
       </div>
-      <div class="price-line">
-        <span class="price-main">${formatNGN(item.unit_price * item.quantity)}</span>
-      </div>
+      <div class="price-line"><span class="price-main">${formatNGN(item.unit_price * item.quantity)}</span></div>
     </article>
-  `).join("");
+  `).join('');
 
   const subtotal = cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
   if (totals) totals.textContent = formatNGN(subtotal);
 
-  mount.querySelectorAll("[data-cart-minus]").forEach((button) => {
-    button.addEventListener("click", () => updateItem(Number(button.dataset.cartMinus), -1));
-  });
-  mount.querySelectorAll("[data-cart-plus]").forEach((button) => {
-    button.addEventListener("click", () => updateItem(Number(button.dataset.cartPlus), 1));
-  });
-  mount.querySelectorAll("[data-cart-remove]").forEach((button) => {
-    button.addEventListener("click", () => removeItem(Number(button.dataset.cartRemove)));
-  });
+  mount.querySelectorAll('[data-cart-minus]').forEach((button) => button.addEventListener('click', () => updateItem(Number(button.dataset.cartMinus), -1)));
+  mount.querySelectorAll('[data-cart-plus]').forEach((button) => button.addEventListener('click', () => updateItem(Number(button.dataset.cartPlus), 1)));
+  mount.querySelectorAll('[data-cart-remove]').forEach((button) => button.addEventListener('click', async () => {
+    await removeCartItem(button.dataset.cartRemove);
+    renderCart();
+  }));
 }
 
-function updateItem(index, delta) {
+async function updateItem(index, delta) {
   const cart = getCart();
-  cart[index].quantity += delta;
-  if (cart[index].quantity < 1) cart.splice(index, 1);
-  saveCart(cart);
+  const item = cart[index];
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity < 1) {
+    await removeCartItem(item.key);
+  } else {
+    await saveCartAndSync(cart);
+  }
   renderCart();
 }
 
-function removeItem(index) {
-  const cart = getCart();
-  cart.splice(index, 1);
-  saveCart(cart);
+document.addEventListener('DOMContentLoaded', () => {
   renderCart();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  renderCart();
-  document.querySelector("[data-clear-cart]")?.addEventListener("click", () => {
-    clearCart();
+  document.querySelector('[data-clear-cart]')?.addEventListener('click', async () => {
+    await clearCart();
     renderCart();
   });
 });

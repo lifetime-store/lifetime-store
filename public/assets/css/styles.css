@@ -661,3 +661,12 @@ form {
     grid-template-columns:1fr;
   }
 }
+
+.auth-shell {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+[data-account-link] {
+  text-transform: capitalize;
+}

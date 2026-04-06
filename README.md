@@ -1,30 +1,42 @@
-# Lifetime Store — Premium Luxury Update
+# Lifetime Store — Upgraded Production Package
 
-This package includes:
-- fixed Paystack initialize function
+This upgraded package includes:
 - premium storefront refresh
-- visible stock counts on featured, shop, and product pages
-- support and orders email addresses wired into storefront copy
-- R2 image support, D1 product data, and admin dashboard support
+- Paystack checkout initialization and verification
+- D1 product, variants, orders, and verification code support
+- private admin APIs with R2 image upload support
+- customer account system (register, login, logout, account page)
+- saved cart sync across devices for signed-in customers
+- support and orders email wiring
 
-## Required Cloudflare Secrets
-Add these in Workers & Pages → lifetime-store → Settings → Variables and Secrets:
+## Required Cloudflare secrets
+Set these in Workers & Pages → lifetime-store → Settings → Variables and Secrets:
 - ADMIN_TOKEN
 - PAYSTACK_SECRET_KEY
 - RESEND_API_KEY
 
-## Built-in Vars in wrangler.toml
-- BRAND_EMAIL = support@lifetime-store.shop
-- ALERT_TO_EMAIL = support@lifetime-store.shop
-- MAIL_FROM_EMAIL = orders@lifetime-store.shop
-- PAYSTACK_PUBLIC_KEY = live public key
+## Required bindings
+Already expected by this package:
+- D1 database binding: `DB`
+- R2 bucket binding: `BUCKET`
 
-## After upload
-1. Redeploy the project.
-2. In Resend, verify the sender domain for lifetime-store.shop.
-3. Set Paystack webhook to:
-   https://www.lifetime-store.shop/api/paystack/webhook
-   or while Pages domain is active:
-   https://lifetime-store.pages.dev/api/paystack/webhook
-4. Test admin, shop, checkout, and support.
-5. Connect the custom domain in Cloudflare Pages.
+## Migrations to run
+Run these against `lifetime_store_db`:
+1. `migrations/0001_init.sql`
+2. `migrations/0002_admin_upgrade.sql`
+3. `migrations/0003_accounts_cart.sql`
+
+## Important notes
+- Public logo file is included at `public/assets/logo.png`
+- Customer session uses a secure HTTP-only cookie
+- Signed-in carts sync through `/api/cart`
+- After deploy, test: register, login, add to cart, checkout, paystack callback, verify page, support form
+
+## Paystack webhook
+Use:
+- `https://lifetime-store.shop/api/paystack/webhook`
+
+## Git / Pages setup
+- Build command: leave empty if already using static Pages deployment
+- Build output directory: `public`
+- Root directory: repo root
