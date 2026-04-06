@@ -18,7 +18,7 @@ async function loadShop() {
   const [data, meta] = await Promise.all([apiGet('/api/products'), getStorefrontMeta()]);
   const products = data.products || [];
   document.querySelectorAll('[data-currency-copy]').forEach((el) => {
-    el.textContent = `Shop preview is currently shown in ${meta.currency} for region ${meta.country}.`;
+    el.textContent = meta.currency === 'NGN' ? '' : `Prices shown in ${meta.currency}. Checkout in NGN.`;
   });
 
   if (!products.length) {
@@ -43,7 +43,7 @@ async function loadShop() {
         </div>
         <div class="price-line">
           <span class="price-main">${price.formatted}</span>
-          <span class="price-alt">${Number(product.price_usd || 0).toFixed(2)} USD base</span>
+          ${price.currency === 'NGN' ? '' : `<span class=\"price-alt\">Checkout in NGN</span>`}
           ${price.formattedCompare ? `<span class="price-compare">${price.formattedCompare}</span>` : ''}
         </div>
         <div class="inline-actions">

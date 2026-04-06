@@ -17,7 +17,7 @@ async function productPriceMarkup(product) {
   return `
     <div class="price-line">
       <span class="price-main">${localized.formatted}</span>
-      <span class="price-alt">Base ${escapeHtml(localized.country)} region · ${Number(product.price_usd || 0).toFixed(2)} USD</span>
+      ${localized.currency === 'NGN' ? '' : `<span class=\"price-alt\">Checkout in NGN</span>`}
       ${localized.formattedCompare ? `<span class="price-compare">${localized.formattedCompare}</span>` : ''}
     </div>
   `;
@@ -35,7 +35,7 @@ async function loadFeaturedProducts() {
 
   const spotlight = document.querySelector('[data-region-copy]');
   if (spotlight) {
-    spotlight.textContent = `Your current region is ${meta.country}. Prices are previewed in ${meta.currency} while checkout remains secured in NGN.`;
+    spotlight.textContent = meta.currency === 'NGN' ? '' : `Prices shown in ${meta.currency}. Checkout in NGN.`;
   }
 
   if (!products.length) {

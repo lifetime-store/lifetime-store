@@ -61,7 +61,7 @@ async function loadProduct() {
         </div>
         <div class="price-line">
           <span class="price-main">${localPrice.formatted}</span>
-          <span class="price-alt">${Number(product.price_usd || 0).toFixed(2)} USD base</span>
+          ${localPrice.currency === 'NGN' ? '' : `<span class=\"price-alt\">Checkout in NGN</span>`}
           ${localPrice.formattedCompare ? `<span class="price-compare">${localPrice.formattedCompare}</span>` : ''}
         </div>
         <div class="divider"></div>
@@ -69,7 +69,7 @@ async function loadProduct() {
           <article><strong>Fit</strong><p class="muted">${escapeHtml(product.fit_notes || 'Slightly relaxed premium fit.')}</p></article>
           <article><strong>Materials</strong><p class="muted">${escapeHtml(product.materials || 'Premium fabric build.')}</p></article>
           <article><strong>Care</strong><p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p></article>
-          <article><strong>Support</strong><p class="muted">Need help before or after purchase? Contact support@lifetime-store.shop.</p></article>
+          <article><strong>Support</strong><p class="muted">support@lifetime-store.shop</p></article>
         </div>
         <form data-add-cart-form>
           <label>Color<select name="color">${colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}</select></label>

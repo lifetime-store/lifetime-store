@@ -226,16 +226,14 @@ export async function renderStorefrontBanner() {
   const meta = await getStorefrontMeta();
   document.querySelectorAll('[data-storefront-banner]').forEach((el) => {
     const promo = meta.promotion;
-    const parts = [];
-    if (promo?.banner_text) parts.push(escapeHtml(promo.banner_text));
-    if (meta.storeNotice) parts.push(escapeHtml(meta.storeNotice));
-    if (!parts.length) {
+    const text = meta.storeNotice || promo?.banner_text || '';
+    if (!String(text || '').trim()) {
       el.classList.add('hide');
       return;
     }
-    const badge = promo?.badge_text || meta.storeNoticeBadge || '';
+    const badge = meta.storeNotice ? (meta.storeNoticeBadge || '') : (promo?.badge_text || '');
     el.classList.remove('hide');
-    el.innerHTML = `<div class="container banner-inner"><strong>${badge ? escapeHtml(badge) + ' · ' : ''}${parts.join(' ')}</strong></div>`;
+    el.innerHTML = `<div class="container banner-inner"><strong>${badge ? escapeHtml(badge) + ' · ' : ''}${escapeHtml(text)}</strong></div>`;
   });
 }
 

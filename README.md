@@ -66,3 +66,10 @@ This package adds:
 - a Sitewide Banner and Verify Scanner editor in Studio LT
 
 No new D1 migration is required for this upgrade because it uses the existing `site_settings` table.
+
+
+Final touch update:
+- cleaner storefront copy
+- shorter checkout and support text
+- banner now prefers your admin notice instead of stacking multiple messages
+- local currency preview hides when shopper currency is already NGN

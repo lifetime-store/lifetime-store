@@ -71,7 +71,7 @@ async function updateTotals() {
   }
   if (localEl) {
     const local = await localizePriceFromUSD(total / Number((await getStorefrontMeta()).usdRate || 1550) || 0);
-    localEl.textContent = `${local.formatted} regional preview`;
+    localEl.textContent = local.currency === 'NGN' ? '' : local.formatted;
   }
 }
 
@@ -125,7 +125,7 @@ async function submitOrder(event) {
     items: cart
   };
   button.disabled = true;
-  button.textContent = 'Redirecting to secure checkout...';
+  button.textContent = 'Redirecting...';
   const result = await apiPost('/api/paystack/initialize', payload);
   if (result.ok && result.authorizationUrl) {
     window.location.href = result.authorizationUrl;
@@ -133,7 +133,7 @@ async function submitOrder(event) {
   }
   setNotice(`<div class="notice notice-danger">${result.message || 'Could not initialize payment.'}</div>`);
   button.disabled = false;
-  button.textContent = 'Pay securely';
+  button.textContent = 'Pay now';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

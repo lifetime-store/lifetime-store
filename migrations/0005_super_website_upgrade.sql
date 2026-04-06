@@ -72,7 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_promo_codes_code ON promo_codes(code, active);
 CREATE INDEX IF NOT EXISTS idx_customer_profiles_tier ON customer_profiles(tier_name);
 
 INSERT OR IGNORE INTO site_settings (key, value) VALUES
-('store_notice', 'Worldwide pricing preview adjusts to the shopper region. Final settlement is completed securely in NGN at checkout.'),
+('store_notice', 'Checkout is completed in NGN. International visitors see a local price preview.'),
 ('usd_rates_json', '{"USD":1,"NGN":1550,"EUR":0.92,"GBP":0.79,"CAD":1.36,"AUD":1.52,"AED":3.67,"ZAR":18.6,"KES":130,"GHS":15.5,"XOF":610}'),
 ('country_currency_json', '{"NG":"NGN","US":"USD","GB":"GBP","CA":"CAD","AU":"AUD","AE":"AED","ZA":"ZAR","KE":"KES","GH":"GHS","FR":"EUR","DE":"EUR","ES":"EUR","IT":"EUR","NL":"EUR","BE":"EUR","IE":"EUR","PT":"EUR","CI":"XOF","SN":"XOF"}');
 
@@ -82,7 +82,7 @@ INSERT OR IGNORE INTO promotions (
   'Launch Week',
   'launch-week',
   'Launch offer',
-  'Launch week is live — selected essentials now carry a limited event discount and stackable buyer perks.',
+  'Launch week is live. Selected items have a limited event discount.',
   'percent',
   10,
   1,

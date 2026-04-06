@@ -12,10 +12,7 @@
     <div class="container nav">
       <a href="/" class="brand">
         <span class="brand-mark">LT</span>
-        <span class="brand-copy">
-          LIFETIME
-          <small>Quiet premium essentials</small>
-        </span>
+        <span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span>
       </a>
       <nav class="nav-links">
         <a href="/">Home</a>
@@ -37,15 +34,15 @@
   <div class="container split-grid">
     <section class="panel">
       <div class="eyebrow">Verification</div>
-      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Verify an original Lifetime item</h1>
-      <p class="lead">Enter the serial code from your garment label or scan the item QR code to confirm authenticity.</p>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Verify your item</h1>
+      <p class="lead">Scan the label QR or enter the code below.</p>
       <div class="scanner-panel">
         <div class="inline-actions wrap">
           <button class="btn btn-soft" type="button" data-start-scanner>Scan label live</button>
           <button class="btn btn-soft hide" type="button" data-stop-scanner>Stop scanner</button>
           <label class="btn btn-soft" style="cursor:pointer;">Upload label photo<input class="hide" type="file" accept="image/*" capture="environment" data-scan-file></label>
         </div>
-        <div class="scanner-note muted" data-scanner-note>Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.</div>
+        <div class="scanner-note muted" data-scanner-note>Open in Safari or Chrome for the best camera support.</div>
         <div class="scanner-shell hide" data-scanner-shell>
           <div id="lt-verify-reader" data-scanner-reader></div>
           <video playsinline autoplay muted class="hide" data-scanner-video></video>
@@ -60,25 +57,11 @@
       </form>
     </section>
     <aside class="panel" data-verify-result>
-      <div class="notice">Enter a code to check whether the item is active, genuine, and registered by Lifetime.</div>
+      <div class="notice">Enter a code to check item status.</div>
     </aside>
   </div>
 </main>
-  <footer class="footer">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <strong>LIFETIME</strong>
-        <small>Quiet quality. Everyday wear. Verified originals.</small>
-      </div>
-      <nav class="footer-links">
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/support.html">Support</a>
-        <a href="/about.html">About</a>
-      </nav>
-    </div>
-  </footer>
-
+  <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/about.html">About</a></nav></div></footer>
   <script src="https://unpkg.com/html5-qrcode" defer></script>
   <script type="module" src="/assets/js/api.js"></script>
   <script type="module" src="/assets/js/verify.js"></script>

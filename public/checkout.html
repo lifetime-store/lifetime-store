@@ -4,23 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Checkout — Lifetime</title>
-  <meta name="description" content="Securely complete your Lifetime order.">
+  <meta name="description" content="Complete your Lifetime order.">
   <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
-<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/about.html">About</a><a href="/support.html">Support</a>
-        <a href="/account.html">Account</a>
-      </nav><div class="nav-actions">
-        <a class="badge" href="/account.html" data-account-link>Account</a>
-        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
-      </div></div></header>
+<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/about.html">About</a><a href="/support.html">Support</a><a href="/account.html">Account</a></nav><div class="nav-actions"><a class="badge" href="/account.html" data-account-link>Account</a><a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a></div></div></header>
 <div class="storefront-banner hide" data-storefront-banner></div>
 <main class="section">
   <div class="container split-grid">
     <section class="panel luxury-panel">
       <div class="eyebrow">Checkout</div>
       <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Complete your order</h1>
-      <p class="muted">Enter your delivery information below. Payment is processed through a secure checkout flow. After successful verification, your order is confirmed and a confirmation email is sent automatically from orders@lifetime-store.shop.</p>
+      <p class="muted">Enter your delivery details and continue to payment.</p>
       <div data-checkout-notice></div>
       <form data-checkout-form>
         <div class="form-grid">
@@ -31,14 +26,14 @@
           <label>City <input name="city"></label>
           <label>Address <input name="address"></label>
         </div>
-        <label>Notes <textarea name="notes" placeholder="Delivery notes or order instructions"></textarea></label>
+        <label>Notes <textarea name="notes" placeholder="Delivery notes"></textarea></label>
         <div class="form-grid">
           <label>Promo code <input name="promo_code" data-promo-code placeholder="LIFETIME10"></label>
           <label style="align-self:end"><button class="btn btn-soft" type="button" data-apply-promo>Apply code</button></label>
         </div>
         <div data-promo-note></div>
         <div data-tier-note></div>
-        <button class="btn btn-primary" type="submit">Pay securely</button>
+        <button class="btn btn-primary" type="submit">Pay now</button>
       </form>
     </section>
     <aside class="panel luxury-panel">
@@ -51,9 +46,8 @@
       <div data-checkout-discounts></div>
       <div class="divider"></div>
       <div class="details-list">
-        <article><strong>Secure checkout</strong><p class="muted">Payments are processed through an encrypted payment page before an order is marked as paid.</p></article>
-        <article><strong>Order protection</strong><p class="muted">Your payment reference and order number are recorded automatically to support tracking and customer assistance.</p></article>
-        <article><strong>Dedicated contact</strong><p class="muted">Post-purchase communication can be handled through <a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a>.</p></article>
+        <article><strong>Payment</strong><p class="muted">Processed by Paystack.</p></article>
+        <article><strong>Order email</strong><p class="muted"><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></p></article>
       </div>
     </aside>
   </div>

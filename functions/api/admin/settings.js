@@ -6,8 +6,8 @@ import { getSetting } from '../../_lib/storefront.js';
 
 const DEFAULTS = {
   store_notice_badge: 'Store notice',
-  store_notice: 'Worldwide pricing preview adjusts to the shopper region. Final settlement is completed securely in NGN at checkout.',
-  verify_scanner_hint: 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.'
+  store_notice: 'Checkout is completed in NGN. International visitors see a local price preview.',
+  verify_scanner_hint: 'Open this page in Safari or Chrome for the best camera support.'
 };
 
 export async function onRequestOptions() {
