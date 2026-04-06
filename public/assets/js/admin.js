@@ -15,6 +15,9 @@ const state = {
   batches: [],
   codes: [],
   orders: [],
+  promotions: [],
+  promoCodes: [],
+  customers: [],
   selectedProductId: null,
   selectedImages: []
 };
@@ -32,6 +35,8 @@ function renderSummary(summary) {
   document.querySelector("[data-summary-pending]").textContent = summary.pendingActivation ?? 0;
   document.querySelector("[data-summary-active-batches]").textContent = summary.activeBatches ?? 0;
   document.querySelector("[data-summary-orders]").textContent = summary.orders ?? 0;
+  document.querySelector("[data-summary-buyers]") && (document.querySelector("[data-summary-buyers]").textContent = summary.buyers ?? 0);
+  document.querySelector("[data-summary-promotions]") && (document.querySelector("[data-summary-promotions]").textContent = summary.promotions ?? 0);
 }
 
 function showShell(show) {
@@ -41,6 +46,17 @@ function showShell(show) {
 
 function showAuthNotice(message) {
   notice("[data-login-notice]", escapeHtml(message), "danger");
+}
+
+function populatePromotionSelects() {
+  const options = [`<option value="">No linked promotion</option>`].concat(
+    state.promotions.map((promotion) => `<option value="${promotion.id}">${escapeHtml(promotion.title)} (${escapeHtml(promotion.slug)})</option>`)
+  );
+  document.querySelectorAll('[data-promotion-select]').forEach((select) => {
+    const current = select.value;
+    select.innerHTML = options.join('');
+    if (current) select.value = current;
+  });
 }
 
 function populateProductSelects() {
@@ -84,7 +100,7 @@ function productCard(product) {
           </div>
           <span class="pill">${product.active ? "Live" : "Hidden"}</span>
         </div>
-        <div class="muted">${formatNGN(product.price_ngn)} · ${formatUSD(product.price_usd)} · ${product.image_count || 0} image(s) · ${product.variant_count || 0} variant(s)</div>
+        <div class="muted">${formatNGN(product.price_ngn)} · ${formatUSD(product.price_usd)}${product.compare_at_ngn ? ` · event compare ${formatNGN(product.compare_at_ngn)}` : ''} · ${product.image_count || 0} image(s) · ${product.variant_count || 0} variant(s)</div>
         <div class="admin-actions compact">
           <button class="btn btn-soft" type="button" data-edit-product="${product.id}">Edit</button>
           <button class="btn btn-soft" type="button" data-manage-images="${product.id}">Images</button>
@@ -103,11 +119,64 @@ function variantCard(variant) {
       <div>
         <strong>${escapeHtml(variant.sku)}</strong>
         <div class="muted">${escapeHtml(variant.product_name)} · ${escapeHtml(variant.color)} / ${escapeHtml(variant.size)}</div>
+        <div class="muted">${formatNGN(variant.price_ngn || 0)}${variant.compare_at_ngn ? ` · compare ${formatNGN(variant.compare_at_ngn)}` : ''}</div>
       </div>
-      <div class="admin-actions compact">
+      <div class="admin-actions compact wrap">
         <span class="pill">Stock ${Number(variant.stock || 0)}</span>
+        <button class="btn btn-soft" type="button" data-stock-adjust="${variant.id}" data-delta="-1">-1</button>
+        <button class="btn btn-soft" type="button" data-stock-adjust="${variant.id}" data-delta="5">+5</button>
         <button class="btn btn-soft" type="button" data-edit-variant="${variant.id}">Edit</button>
         <button class="btn btn-danger" type="button" data-delete-variant="${variant.id}">Delete</button>
+      </div>
+    </article>
+  `;
+}
+
+
+function promotionCard(promotion) {
+  return `
+    <article class="simple-row simple-row-spaced"> 
+      <div>
+        <strong>${escapeHtml(promotion.title)}</strong>
+        <div class="muted">${escapeHtml(promotion.slug)} · ${escapeHtml(promotion.discount_type)} ${promotion.discount_value}${promotion.discount_type === 'percent' ? '%' : ''}</div>
+        <div class="muted">${escapeHtml(promotion.banner_text || '')}</div>
+      </div>
+      <div class="admin-actions compact wrap">
+        <span class="pill">${promotion.active ? 'Active' : 'Inactive'}</span>
+        <button class="btn btn-soft" type="button" data-edit-promotion="${promotion.id}">Edit</button>
+        <button class="btn btn-danger" type="button" data-delete-promotion="${promotion.id}">Delete</button>
+      </div>
+    </article>
+  `;
+}
+
+function promoCodeCard(code) {
+  return `
+    <article class="simple-row simple-row-spaced">
+      <div>
+        <strong>${escapeHtml(code.code)}</strong>
+        <div class="muted">${escapeHtml(code.discount_type)} ${code.discount_value}${code.discount_type === 'percent' ? '%' : ''} · used ${Number(code.used_count || 0)}${code.usage_limit ? ` / ${code.usage_limit}` : ''}</div>
+      </div>
+      <div class="admin-actions compact wrap">
+        <span class="pill">${code.active ? 'Active' : 'Off'}</span>
+        <button class="btn btn-soft" type="button" data-edit-code="${code.id}">Edit</button>
+        <button class="btn btn-danger" type="button" data-delete-code="${code.id}">Delete</button>
+      </div>
+    </article>
+  `;
+}
+
+function customerCard(customer) {
+  return `
+    <article class="simple-row simple-row-spaced">
+      <div>
+        <strong>${escapeHtml(customer.full_name || customer.email)}</strong>
+        <div class="muted">${escapeHtml(customer.email)} · ${customer.paid_orders} paid order(s)</div>
+        <div class="muted">${formatNGN(customer.lifetime_spend)} spend · ${customer.loyalty_points} points</div>
+      </div>
+      <div class="admin-actions compact wrap">
+        <span class="pill">${escapeHtml(customer.tier_name)}</span>
+        <span class="pill">-${Number(customer.tier_discount_percent || 0)}%</span>
       </div>
     </article>
   `;
@@ -208,6 +277,88 @@ async function readFileAsDataUrl(file) {
   });
 }
 
+
+async function loadPromotions() {
+  const res = await apiGet('/api/admin/promotions', true);
+  const promotionsMount = document.querySelector('[data-admin-promotions]');
+  const codesMount = document.querySelector('[data-admin-promo-codes]');
+  if (!res.ok) {
+    if (promotionsMount) promotionsMount.innerHTML = `<div class="empty-state">${escapeHtml(res.message || 'Could not load promotions.')}</div>`;
+    return;
+  }
+  state.promotions = res.promotions || [];
+  state.promoCodes = res.promoCodes || [];
+  populatePromotionSelects();
+  if (promotionsMount) promotionsMount.innerHTML = state.promotions.length ? state.promotions.map(promotionCard).join('') : `<div class="empty-state">No promotions yet.</div>`;
+  if (codesMount) codesMount.innerHTML = state.promoCodes.length ? state.promoCodes.map(promoCodeCard).join('') : `<div class="empty-state">No promo codes yet.</div>`;
+  bindPromotionActions();
+}
+
+async function loadCustomers() {
+  const res = await apiGet('/api/admin/customers', true);
+  const mount = document.querySelector('[data-admin-customers]');
+  if (!mount) return;
+  if (!res.ok) {
+    mount.innerHTML = `<div class="empty-state">${escapeHtml(res.message || 'Could not load buyers.')}</div>`;
+    return;
+  }
+  state.customers = res.customers || [];
+  mount.innerHTML = state.customers.length ? state.customers.map(customerCard).join('') : `<div class="empty-state">No buyer data yet.</div>`;
+}
+
+function bindPromotionActions() {
+  document.querySelectorAll('[data-edit-promotion]').forEach((button) => {
+    button.onclick = () => {
+      const promotion = state.promotions.find((entry) => Number(entry.id) === Number(button.dataset.editPromotion));
+      const form = document.querySelector('[data-promotion-form]');
+      if (!promotion || !form) return;
+      form.promotion_id.value = promotion.id;
+      form.title.value = promotion.title || '';
+      form.slug.value = promotion.slug || '';
+      form.discount_type.value = promotion.discount_type || 'percent';
+      form.discount_value.value = promotion.discount_value || 0;
+      form.badge_text.value = promotion.badge_text || '';
+      form.banner_text.value = promotion.banner_text || '';
+      form.apply_scope.value = promotion.apply_scope || 'storewide';
+      form.active.checked = Boolean(promotion.active);
+      form.featured.checked = Boolean(promotion.featured);
+    };
+  });
+  document.querySelectorAll('[data-delete-promotion]').forEach((button) => {
+    button.onclick = async () => {
+      if (!window.confirm('Delete this promotion?')) return;
+      const result = await apiPost('/api/admin/promotions', { action: 'delete_promotion', id: Number(button.dataset.deletePromotion) }, true);
+      notice('[data-promo-notice]', escapeHtml(result.message || 'Updated.'), result.ok ? 'success' : 'danger');
+      if (result.ok) await Promise.all([loadPromotions(), refreshSummaryOnly()]);
+    };
+  });
+  document.querySelectorAll('[data-edit-code]').forEach((button) => {
+    button.onclick = () => {
+      const code = state.promoCodes.find((entry) => Number(entry.id) === Number(button.dataset.editCode));
+      const form = document.querySelector('[data-promo-code-form]');
+      if (!code || !form) return;
+      form.promo_code_id.value = code.id;
+      form.promotion_id.value = code.promotion_id || '';
+      form.code.value = code.code || '';
+      form.discount_type.value = code.discount_type || 'percent';
+      form.discount_value.value = code.discount_value || 0;
+      form.min_subtotal.value = code.min_subtotal || 0;
+      form.usage_limit.value = code.usage_limit || '';
+      form.tier_gate.value = code.tier_gate || '';
+      form.active.checked = Boolean(code.active);
+    };
+  });
+  document.querySelectorAll('[data-delete-code]').forEach((button) => {
+    button.onclick = async () => {
+      if (!window.confirm('Delete this promo code?')) return;
+      const result = await apiPost('/api/admin/promotions', { action: 'delete_code', id: Number(button.dataset.deleteCode) }, true);
+      notice('[data-promo-notice]', escapeHtml(result.message || 'Updated.'), result.ok ? 'success' : 'danger');
+      if (result.ok) await loadPromotions();
+    };
+  });
+}
+
+
 async function refreshDashboard() {
   const summary = await apiGet("/api/admin/dashboard", true);
   if (!summary.ok) {
@@ -218,7 +369,7 @@ async function refreshDashboard() {
 
   showShell(true);
   renderSummary(summary.summary || {});
-  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders()]);
+  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders(), loadPromotions(), loadCustomers()]);
 }
 
 async function loadProducts() {
@@ -320,9 +471,13 @@ function fillProductForm(product) {
   form.category.value = product.category || "";
   form.price_ngn.value = product.price_ngn || "";
   form.price_usd.value = product.price_usd || "";
+  if (form.compare_at_ngn) form.compare_at_ngn.value = product.compare_at_ngn || '';
+  if (form.compare_at_usd) form.compare_at_usd.value = product.compare_at_usd || '';
   form.tagline.value = product.tagline || "";
   form.description.value = product.description || "";
   form.materials.value = product.materials || "";
+  if (form.collection_label) form.collection_label.value = product.collection_label || '';
+  if (form.mood_label) form.mood_label.value = product.mood_label || '';
   form.fit_notes.value = product.fit_notes || "";
   form.care.value = product.care || "";
   form.active.checked = Boolean(product.active);
@@ -342,6 +497,8 @@ function fillVariantForm(variant) {
   form.stock.value = variant.stock || 0;
   form.price_ngn.value = variant.price_ngn ?? "";
   form.price_usd.value = variant.price_usd ?? "";
+  if (form.compare_at_ngn) form.compare_at_ngn.value = variant.compare_at_ngn ?? '';
+  if (form.compare_at_usd) form.compare_at_usd.value = variant.compare_at_usd ?? '';
   form.active.checked = Boolean(variant.active);
 }
 
@@ -387,6 +544,16 @@ function bindProductActions() {
 function bindVariantActions() {
   document.querySelectorAll("[data-edit-variant]").forEach((button) => {
     button.onclick = () => fillVariantForm(state.variants.find((entry) => Number(entry.id) === Number(button.dataset.editVariant)));
+  });
+
+  document.querySelectorAll('[data-stock-adjust]').forEach((button) => {
+    button.onclick = async () => {
+      const id = Number(button.dataset.stockAdjust);
+      const delta = Number(button.dataset.delta || 0);
+      const result = await apiPost('/api/admin/variants', { action: 'adjust_stock', id, delta }, true);
+      notice('[data-variant-notice]', escapeHtml(result.message || 'Updated.'), result.ok ? 'success' : 'danger');
+      if (result.ok) await Promise.all([loadVariants(), refreshSummaryOnly()]);
+    };
   });
 
   document.querySelectorAll("[data-delete-variant]").forEach((button) => {
@@ -562,11 +729,15 @@ function bindForms() {
       category: form.category.value.trim(),
       price_ngn: Number(form.price_ngn.value),
       price_usd: Number(form.price_usd.value),
+      compare_at_ngn: form.compare_at_ngn?.value ? Number(form.compare_at_ngn.value) : null,
+      compare_at_usd: form.compare_at_usd?.value ? Number(form.compare_at_usd.value) : null,
       tagline: form.tagline.value.trim(),
       description: form.description.value.trim(),
       materials: form.materials.value.trim(),
       fit_notes: form.fit_notes.value.trim(),
       care: form.care.value.trim(),
+      collection_label: form.collection_label?.value?.trim() || '',
+      mood_label: form.mood_label?.value?.trim() || '',
       active: form.active.checked ? 1 : 0,
       featured: form.featured.checked ? 1 : 0
     };
@@ -593,6 +764,8 @@ function bindForms() {
       stock: Number(form.stock.value || 0),
       price_ngn: form.price_ngn.value ? Number(form.price_ngn.value) : null,
       price_usd: form.price_usd.value ? Number(form.price_usd.value) : null,
+      compare_at_ngn: form.compare_at_ngn?.value ? Number(form.compare_at_ngn.value) : null,
+      compare_at_usd: form.compare_at_usd?.value ? Number(form.compare_at_usd.value) : null,
       active: form.active.checked ? 1 : 0
     };
     const result = await apiPost("/api/admin/variants", payload, true);
@@ -646,6 +819,65 @@ function bindForms() {
     }
     window.open(`/print-labels.html?batch_id=${batchId}`, "_blank", "noopener");
   });
+
+
+  document.querySelector('[data-promotion-reset]')?.addEventListener('click', () => {
+    document.querySelector('[data-promotion-form]')?.reset();
+    document.querySelector('[data-promotion-form] [name="promotion_id"]').value = '';
+  });
+
+  document.querySelector('[data-promo-code-reset]')?.addEventListener('click', () => {
+    document.querySelector('[data-promo-code-form]')?.reset();
+    document.querySelector('[data-promo-code-form] [name="promo_code_id"]').value = '';
+  });
+
+  document.querySelector('[data-promotion-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = {
+      id: form.promotion_id.value ? Number(form.promotion_id.value) : null,
+      title: form.title.value.trim(),
+      slug: form.slug.value.trim(),
+      discount_type: form.discount_type.value,
+      discount_value: Number(form.discount_value.value || 0),
+      badge_text: form.badge_text.value.trim(),
+      banner_text: form.banner_text.value.trim(),
+      apply_scope: form.apply_scope.value.trim(),
+      active: form.active.checked ? 1 : 0,
+      featured: form.featured.checked ? 1 : 0
+    };
+    const result = await apiPost('/api/admin/promotions', payload, true);
+    notice('[data-promo-notice]', escapeHtml(result.message || 'Saved.'), result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      form.reset();
+      form.promotion_id.value = '';
+      await Promise.all([loadPromotions(), refreshSummaryOnly()]);
+    }
+  });
+
+  document.querySelector('[data-promo-code-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = {
+      id: form.promo_code_id.value ? Number(form.promo_code_id.value) : null,
+      promotion_id: form.promotion_id.value ? Number(form.promotion_id.value) : null,
+      code: form.code.value.trim().toUpperCase(),
+      discount_type: form.discount_type.value,
+      discount_value: Number(form.discount_value.value || 0),
+      min_subtotal: Number(form.min_subtotal.value || 0),
+      usage_limit: form.usage_limit.value ? Number(form.usage_limit.value) : null,
+      tier_gate: form.tier_gate.value,
+      active: form.active.checked ? 1 : 0
+    };
+    const result = await apiPost('/api/admin/promotions', payload, true);
+    notice('[data-promo-notice]', escapeHtml(result.message || 'Saved.'), result.ok ? 'success' : 'danger');
+    if (result.ok) {
+      form.reset();
+      form.promo_code_id.value = '';
+      await loadPromotions();
+    }
+  });
+
 
   document.querySelector("[data-image-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();

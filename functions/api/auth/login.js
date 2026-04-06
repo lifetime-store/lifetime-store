@@ -1,6 +1,7 @@
 import { ok, error, optionsResponse } from '../../_lib/response.js';
 import { readJson } from '../../_lib/parse.js';
 import { hashPassword, makeExpiryDate, makeSessionToken, sessionCookie } from '../../_lib/customer-auth.js';
+import { ensureCustomerProfile, loyaltyTierFromSpend } from '../../_lib/storefront.js';
 
 export async function onRequestOptions() {
   return optionsResponse();
@@ -26,6 +27,11 @@ export async function onRequest(context) {
     `).bind(email, passwordHash).first();
 
     if (!customer) return error('Invalid email or password.', 401);
+
+    const profile = await ensureCustomerProfile(context.env, customer.id);
+    customer.tier_name = profile?.tier_name || loyaltyTierFromSpend(profile?.lifetime_spend || 0, profile?.paid_orders || 0).tier;
+    customer.tier_discount_percent = Number(profile?.tier_discount_percent || 0);
+    customer.loyalty_points = Number(profile?.loyalty_points || 0);
 
     const token = makeSessionToken();
     const expiresAt = makeExpiryDate();

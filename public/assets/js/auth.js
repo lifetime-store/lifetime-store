@@ -116,6 +116,8 @@ async function renderAccount() {
     <div class="details-list">
       <article><strong>Name</strong><p class="muted">${customer.full_name || 'Not set yet'}</p></article>
       <article><strong>Email</strong><p class="muted">${customer.email}</p></article>
+      <article><strong>Premium level</strong><p class="muted">${customer.tier_name || 'Classic'}${Number(customer.tier_discount_percent || 0) ? ` · auto discount ${customer.tier_discount_percent}%` : ''}</p></article>
+      <article><strong>Loyalty points</strong><p class="muted">${Number(customer.loyalty_points || 0)} point(s)</p></article>
       <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article>
     </div>
     <div class="inline-actions">

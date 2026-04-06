@@ -1,21 +1,20 @@
-import { addToCart, apiGet, escapeHtml, formatNGN, formatUSD, qs } from "./api.js";
+import { addToCart, apiGet, escapeHtml, localizePriceFromUSD, qs } from './api.js';
 
 function groupVariants(variants) {
-  const colors = [...new Set(variants.map((v) => v.color))];
-  const sizes = [...new Set(variants.map((v) => v.size))];
-  return { colors, sizes };
+  return {
+    colors: [...new Set(variants.map((v) => v.color))],
+    sizes: [...new Set(variants.map((v) => v.size))]
+  };
 }
 
 function buildGallery(images, fallback) {
-  if (!images?.length) {
-    return `<article class="product-hero">${escapeHtml(fallback)}</article>`;
-  }
+  if (!images?.length) return `<article class="product-hero">${escapeHtml(fallback)}</article>`;
   const primary = images[0];
   return `
     <div class="product-gallery">
       <article class="product-hero product-hero-media"><img src="${primary.data_url}" alt="${escapeHtml(primary.alt_text || fallback)}"></article>
       <div class="thumb-strip">
-        ${images.map((image) => `<button class="thumb-btn ${image.is_primary ? 'is-active' : ''}" type="button" data-gallery-image="${image.id}" data-gallery-url="${image.data_url}" data-gallery-alt="${escapeHtml(image.alt_text || fallback)}"><img src="${image.data_url}" alt="${escapeHtml(image.alt_text || fallback)}"></button>`).join('')}
+        ${images.map((image) => `<button class="thumb-btn ${image.is_primary ? 'is-active' : ''}" type="button" data-gallery-url="${image.data_url}" data-gallery-alt="${escapeHtml(image.alt_text || fallback)}"><img src="${image.data_url}" alt="${escapeHtml(image.alt_text || fallback)}"></button>`).join('')}
       </div>
     </div>
   `;
@@ -28,10 +27,9 @@ function stockBadge(totalStock) {
 }
 
 async function loadProduct() {
-  const slug = qs("slug");
-  const mount = document.querySelector("[data-product-view]");
+  const slug = qs('slug');
+  const mount = document.querySelector('[data-product-view]');
   if (!mount) return;
-
   if (!slug) {
     mount.innerHTML = `<div class="notice notice-danger">No product selected.</div>`;
     return;
@@ -46,6 +44,7 @@ async function loadProduct() {
   const { product } = data;
   const { colors, sizes } = groupVariants(product.variants);
   const firstVariant = product.variants[0];
+  const localPrice = await localizePriceFromUSD(product.price_usd, product.compare_at_usd);
 
   mount.innerHTML = `
     <div class="split-grid product-split">
@@ -56,46 +55,26 @@ async function loadProduct() {
         <p class="lead">${escapeHtml(product.description)}</p>
         <div class="product-meta product-meta-strong">
           <span class="pill">${escapeHtml(product.short_code)}</span>
+          ${product.collection_label ? `<span class="pill">${escapeHtml(product.collection_label)}</span>` : ''}
           ${stockBadge(Number(product.total_stock || 0))}
-          <span class="pill">${Number(product.image_count || 0)} image${Number(product.image_count || 0) === 1 ? '' : 's'}</span>
+          ${product.mood_label ? `<span class="pill">${escapeHtml(product.mood_label)}</span>` : ''}
         </div>
         <div class="price-line">
-          <span class="price-main">${formatNGN(product.price_ngn)}</span>
-          <span class="price-alt">${formatUSD(product.price_usd)}</span>
+          <span class="price-main">${localPrice.formatted}</span>
+          <span class="price-alt">${Number(product.price_usd || 0).toFixed(2)} USD base</span>
+          ${localPrice.formattedCompare ? `<span class="price-compare">${localPrice.formattedCompare}</span>` : ''}
         </div>
         <div class="divider"></div>
         <div class="details-list">
-          <article>
-            <strong>Fit</strong>
-            <p class="muted">${escapeHtml(product.fit_notes || 'Slightly relaxed premium fit.')}</p>
-          </article>
-          <article>
-            <strong>Materials</strong>
-            <p class="muted">${escapeHtml(product.materials || 'Premium fabric build.')}</p>
-          </article>
-          <article>
-            <strong>Care</strong>
-            <p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p>
-          </article>
-          <article>
-            <strong>Support</strong>
-            <p class="muted">Need help before or after purchase? Contact support@lifetime-store.shop.</p>
-          </article>
+          <article><strong>Fit</strong><p class="muted">${escapeHtml(product.fit_notes || 'Slightly relaxed premium fit.')}</p></article>
+          <article><strong>Materials</strong><p class="muted">${escapeHtml(product.materials || 'Premium fabric build.')}</p></article>
+          <article><strong>Care</strong><p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p></article>
+          <article><strong>Support</strong><p class="muted">Need help before or after purchase? Contact support@lifetime-store.shop.</p></article>
         </div>
         <form data-add-cart-form>
-          <label>Color
-            <select name="color">
-              ${colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join("")}
-            </select>
-          </label>
-          <label>Size
-            <select name="size">
-              ${sizes.map((size) => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join("")}
-            </select>
-          </label>
-          <label>Quantity
-            <input type="number" name="quantity" value="1" min="1" max="20">
-          </label>
+          <label>Color<select name="color">${colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}</select></label>
+          <label>Size<select name="size">${sizes.map((size) => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')}</select></label>
+          <label>Quantity<input type="number" name="quantity" value="1" min="1" max="20"></label>
           <div class="notice notice-warning hide" data-stock-warning></div>
           <div class="inline-actions">
             <button class="btn btn-primary" type="submit" data-cart-submit>Add to Cart</button>
@@ -107,18 +86,16 @@ async function loadProduct() {
   `;
 
   const hero = mount.querySelector('.product-hero-media img');
-  mount.querySelectorAll('[data-gallery-image]').forEach((button) => {
-    button.addEventListener('click', () => {
-      mount.querySelectorAll('.thumb-btn').forEach((thumb) => thumb.classList.remove('is-active'));
-      button.classList.add('is-active');
-      if (hero) {
-        hero.src = button.dataset.galleryUrl;
-        hero.alt = button.dataset.galleryAlt;
-      }
-    });
-  });
+  mount.querySelectorAll('[data-gallery-url]').forEach((button) => button.addEventListener('click', () => {
+    mount.querySelectorAll('.thumb-btn').forEach((thumb) => thumb.classList.remove('is-active'));
+    button.classList.add('is-active');
+    if (hero) {
+      hero.src = button.dataset.galleryUrl;
+      hero.alt = button.dataset.galleryAlt;
+    }
+  }));
 
-  const form = mount.querySelector("[data-add-cart-form]");
+  const form = mount.querySelector('[data-add-cart-form]');
   const warning = mount.querySelector('[data-stock-warning]');
   const submitBtn = mount.querySelector('[data-cart-submit]');
 
@@ -145,20 +122,18 @@ async function loadProduct() {
   form.size.addEventListener('change', refreshVariantState);
   refreshVariantState();
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const color = form.color.value;
     const size = form.size.value;
     const quantity = Number(form.quantity.value || 1);
     const variant = product.variants.find((entry) => entry.color === color && entry.size === size) || firstVariant;
-
     if (!variant || Number(variant.stock || 0) < quantity || Number(variant.stock || 0) <= 0) {
       warning.classList.remove('hide');
       warning.textContent = 'Selected quantity is not available right now.';
       return;
     }
-
-    addToCart({
+    await addToCart({
       key: `${product.slug}:${variant.id}`,
       product_id: product.id,
       variant_id: variant.id,
@@ -169,14 +144,13 @@ async function loadProduct() {
       size: variant.size,
       quantity,
       unit_price: variant.price_ngn || product.price_ngn,
-      currency: "NGN",
+      currency: 'NGN',
       stock: Number(variant.stock || 0)
     });
-
-    form.quantity.value = "1";
-    alert("Added to cart.");
+    form.quantity.value = '1';
+    alert('Added to cart.');
     refreshVariantState();
   });
 }
 
-document.addEventListener("DOMContentLoaded", loadProduct);
+document.addEventListener('DOMContentLoaded', loadProduct);

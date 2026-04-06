@@ -1,6 +1,7 @@
 import { ok, error, optionsResponse } from '../../_lib/response.js';
 import { readJson } from '../../_lib/parse.js';
 import { hashPassword, makeExpiryDate, makeSessionToken, sessionCookie } from '../../_lib/customer-auth.js';
+import { ensureCustomerProfile } from '../../_lib/storefront.js';
 
 export async function onRequestOptions() {
   return optionsResponse();
@@ -29,6 +30,8 @@ export async function onRequest(context) {
     `).bind(email, passwordHash, fullName || null).run();
 
     const customerId = insert.meta?.last_row_id;
+    await ensureCustomerProfile(context.env, customerId);
+
     const token = makeSessionToken();
     const expiresAt = makeExpiryDate();
 

@@ -14,6 +14,7 @@
         <a class="badge" href="/account.html" data-account-link>Account</a>
         <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
       </div></div></header>
+<div class="storefront-banner hide" data-storefront-banner></div>
 <main class="section">
   <div class="container split-grid">
     <section class="panel luxury-panel">
@@ -31,6 +32,12 @@
           <label>Address <input name="address"></label>
         </div>
         <label>Notes <textarea name="notes" placeholder="Delivery notes or order instructions"></textarea></label>
+        <div class="form-grid">
+          <label>Promo code <input name="promo_code" data-promo-code placeholder="LIFETIME10"></label>
+          <label style="align-self:end"><button class="btn btn-soft" type="button" data-apply-promo>Apply code</button></label>
+        </div>
+        <div data-promo-note></div>
+        <div data-tier-note></div>
         <button class="btn btn-primary" type="submit">Pay securely</button>
       </form>
     </section>
@@ -40,6 +47,8 @@
       <div class="divider"></div>
       <h3>Total</h3>
       <div class="price-main" data-checkout-total>₦0</div>
+      <div class="price-alt" data-checkout-total-local></div>
+      <div data-checkout-discounts></div>
       <div class="divider"></div>
       <div class="details-list">
         <article><strong>Secure checkout</strong><p class="muted">Payments are processed through an encrypted payment page before an order is marked as paid.</p></article>

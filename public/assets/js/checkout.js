@@ -1,18 +1,22 @@
-import { apiGet, apiPost, clearCart, formatNGN, getCart, getCustomer, qs } from './api.js';
+import { apiPost, clearCart, formatNGN, getCart, getCustomer, getStorefrontMeta, loadCustomer, localizePriceFromUSD, qs } from './api.js';
 
-function renderOrderPreview() {
+let checkoutContext = { subtotal: 0, promoDiscount: 0, tierDiscount: 0, promoCode: '' };
+
+async function renderOrderPreview() {
   const cart = getCart();
   const mount = document.querySelector('[data-checkout-items]');
   const totalEl = document.querySelector('[data-checkout-total]');
+  const localEl = document.querySelector('[data-checkout-total-local]');
   if (!mount) return false;
-
-  if (cart.length === 0) {
+  if (!cart.length) {
     mount.innerHTML = `<div class="notice notice-warning">Your cart is empty. Add products first.</div>`;
     if (totalEl) totalEl.textContent = formatNGN(0);
+    if (localEl) localEl.textContent = '';
     return false;
   }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  checkoutContext.subtotal = subtotal;
   mount.innerHTML = cart.map((item) => `
     <article class="cart-item">
       <strong>${item.product_name}</strong>
@@ -21,7 +25,7 @@ function renderOrderPreview() {
       <span>${formatNGN(item.unit_price * item.quantity)}</span>
     </article>
   `).join('');
-  if (totalEl) totalEl.textContent = formatNGN(subtotal);
+  await updateTotals();
   return true;
 }
 
@@ -31,11 +35,17 @@ function setNotice(html) {
 }
 
 async function prefillCustomer() {
-  const customer = getCustomer();
+  const customer = await loadCustomer() || getCustomer();
   const form = document.querySelector('[data-checkout-form]');
   if (!form || !customer) return;
   if (!form.email.value) form.email.value = customer.email || '';
   if (!form.customer_name.value) form.customer_name.value = customer.full_name || '';
+  const tierMount = document.querySelector('[data-tier-note]');
+  if (tierMount && customer.tier_name) {
+    tierMount.innerHTML = `<div class="notice notice-success">Buyer tier: <strong>${customer.tier_name}</strong>${Number(customer.tier_discount_percent || 0) ? ` · auto discount ${customer.tier_discount_percent}%` : ''}</div>`;
+    checkoutContext.tierDiscount = Math.round((checkoutContext.subtotal * Number(customer.tier_discount_percent || 0) / 100) * 100) / 100;
+    await updateTotals();
+  }
 }
 
 function handlePaymentReturn() {
@@ -50,15 +60,56 @@ function handlePaymentReturn() {
   }
 }
 
+async function updateTotals() {
+  const total = Math.max(0, checkoutContext.subtotal - checkoutContext.promoDiscount - checkoutContext.tierDiscount);
+  const totalEl = document.querySelector('[data-checkout-total]');
+  const discountEl = document.querySelector('[data-checkout-discounts]');
+  const localEl = document.querySelector('[data-checkout-total-local]');
+  if (totalEl) totalEl.textContent = formatNGN(total);
+  if (discountEl) {
+    discountEl.innerHTML = `${checkoutContext.promoDiscount ? `<div class="muted">Promo: -${formatNGN(checkoutContext.promoDiscount)}</div>` : ''}${checkoutContext.tierDiscount ? `<div class="muted">Tier: -${formatNGN(checkoutContext.tierDiscount)}</div>` : ''}`;
+  }
+  if (localEl) {
+    const local = await localizePriceFromUSD(total / Number((await getStorefrontMeta()).usdRate || 1550) || 0);
+    localEl.textContent = `${local.formatted} regional preview`;
+  }
+}
+
+async function applyPromo() {
+  const input = document.querySelector('[data-promo-code]');
+  if (!input) return;
+  const code = input.value.trim();
+  if (!code) {
+    checkoutContext.promoDiscount = 0;
+    checkoutContext.promoCode = '';
+    await updateTotals();
+    return;
+  }
+  const result = await apiPost('/api/promotions/validate', { code, subtotal: checkoutContext.subtotal });
+  const note = document.querySelector('[data-promo-note]');
+  if (!result.ok) {
+    checkoutContext.promoDiscount = 0;
+    checkoutContext.promoCode = '';
+    if (note) note.innerHTML = `<div class="notice notice-danger">${result.message || 'Promo code invalid.'}</div>`;
+    await updateTotals();
+    return;
+  }
+  checkoutContext.promoCode = result.promo.code;
+  checkoutContext.promoDiscount = Number(result.promo.discount || 0);
+  if (note) note.innerHTML = `<div class="notice notice-success">Promo applied: <strong>${result.promo.code}</strong></div>`;
+  await updateTotals();
+}
+
 async function submitOrder(event) {
   event.preventDefault();
   const cart = getCart();
-  if (cart.length === 0) {
+  if (!cart.length) {
     alert('Cart is empty.');
     return;
   }
   const form = event.currentTarget;
   const button = form.querySelector('button[type="submit"]');
+  const meta = await getStorefrontMeta();
   const payload = {
     customer_name: form.customer_name.value,
     email: form.email.value,
@@ -68,6 +119,9 @@ async function submitOrder(event) {
     address: form.address.value,
     notes: form.notes.value,
     currency: 'NGN',
+    country_code: meta.country,
+    currency_rate: meta.usdRate,
+    promo_code: checkoutContext.promoCode,
     items: cart
   };
   button.disabled = true;
@@ -84,7 +138,9 @@ async function submitOrder(event) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   handlePaymentReturn();
-  renderOrderPreview();
+  await renderOrderPreview();
   await prefillCustomer();
+  const promoButton = document.querySelector('[data-apply-promo]');
+  if (promoButton) promoButton.addEventListener('click', applyPromo);
   document.querySelector('[data-checkout-form]')?.addEventListener('submit', submitOrder);
 });

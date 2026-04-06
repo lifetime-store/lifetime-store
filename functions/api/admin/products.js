@@ -81,9 +81,13 @@ export async function onRequestPost(context) {
     description = '',
     price_ngn,
     price_usd,
+    compare_at_ngn = null,
+    compare_at_usd = null,
     materials = '',
     fit_notes = '',
     care = '',
+    collection_label = '',
+    mood_label = '',
     active = 1,
     featured = 0
   } = body;
@@ -96,8 +100,8 @@ export async function onRequestPost(context) {
     await context.env.DB.prepare(`
       UPDATE products
       SET slug = ?, short_code = ?, name = ?, tagline = ?, category = ?, description = ?,
-          price_ngn = ?, price_usd = ?, materials = ?, fit_notes = ?, care = ?,
-          active = ?, featured = ?, updated_at = CURRENT_TIMESTAMP
+          price_ngn = ?, price_usd = ?, compare_at_ngn = ?, compare_at_usd = ?, materials = ?, fit_notes = ?, care = ?,
+          collection_label = ?, mood_label = ?, active = ?, featured = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).bind(
       slug,
@@ -108,9 +112,13 @@ export async function onRequestPost(context) {
       description,
       toInt(price_ngn),
       toFloat(price_usd),
+      compare_at_ngn === null || compare_at_ngn === '' ? null : toInt(compare_at_ngn),
+      compare_at_usd === null || compare_at_usd === '' ? null : toFloat(compare_at_usd),
       materials,
       fit_notes,
       care,
+      collection_label,
+      mood_label,
       active ? 1 : 0,
       featured ? 1 : 0,
       id
@@ -121,8 +129,8 @@ export async function onRequestPost(context) {
 
   const result = await context.env.DB.prepare(`
     INSERT INTO products (
-      slug, short_code, name, tagline, category, description, price_ngn, price_usd, materials, fit_notes, care, active, featured
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      slug, short_code, name, tagline, category, description, price_ngn, price_usd, compare_at_ngn, compare_at_usd, materials, fit_notes, care, collection_label, mood_label, active, featured
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     slug,
     short_code,
@@ -132,9 +140,13 @@ export async function onRequestPost(context) {
     description,
     toInt(price_ngn),
     toFloat(price_usd),
+    compare_at_ngn === null || compare_at_ngn === '' ? null : toInt(compare_at_ngn),
+    compare_at_usd === null || compare_at_usd === '' ? null : toFloat(compare_at_usd),
     materials,
     fit_notes,
     care,
+    collection_label,
+    mood_label,
     active ? 1 : 0,
     featured ? 1 : 0
   ).run();

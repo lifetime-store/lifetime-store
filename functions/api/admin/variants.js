@@ -35,6 +35,15 @@ export async function onRequestPost(context) {
   const body = await readJson(context.request);
   const action = body.action || (body.id ? 'update' : 'create');
 
+
+  if (action === 'adjust_stock') {
+    const id = toInt(body.id);
+    const delta = toInt(body.delta, 0);
+    if (!id || !delta) return error('Variant id and stock delta are required.', 400);
+    await context.env.DB.prepare(`UPDATE variants SET stock = MAX(0, stock + ?) WHERE id = ?`).bind(delta, id).run();
+    return ok({ message: delta > 0 ? `Added ${delta} units.` : `Removed ${Math.abs(delta)} units.` });
+  }
+
   if (action === 'delete') {
     const id = toInt(body.id);
     if (!id) return error('Variant id is required.', 400);
@@ -53,6 +62,8 @@ export async function onRequestPost(context) {
     stock = 0,
     price_ngn = null,
     price_usd = null,
+    compare_at_ngn = null,
+    compare_at_usd = null,
     active = 1
   } = body;
 
@@ -64,7 +75,7 @@ export async function onRequestPost(context) {
     await context.env.DB.prepare(`
       UPDATE variants
       SET product_id = ?, sku = ?, color = ?, color_code = ?, size = ?, size_code = ?, stock = ?,
-          price_ngn = ?, price_usd = ?, active = ?
+          price_ngn = ?, price_usd = ?, compare_at_ngn = ?, compare_at_usd = ?, active = ?
       WHERE id = ?
     `).bind(
       product_id,
@@ -76,6 +87,8 @@ export async function onRequestPost(context) {
       toInt(stock),
       price_ngn === null || price_ngn === '' ? null : toInt(price_ngn),
       price_usd === null || price_usd === '' ? null : toFloat(price_usd),
+      compare_at_ngn === null || compare_at_ngn === '' ? null : toInt(compare_at_ngn),
+      compare_at_usd === null || compare_at_usd === '' ? null : toFloat(compare_at_usd),
       active ? 1 : 0,
       id
     ).run();
@@ -84,8 +97,8 @@ export async function onRequestPost(context) {
 
   await context.env.DB.prepare(`
     INSERT INTO variants (
-      product_id, sku, color, color_code, size, size_code, stock, price_ngn, price_usd, active
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      product_id, sku, color, color_code, size, size_code, stock, price_ngn, price_usd, compare_at_ngn, compare_at_usd, active
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     product_id,
     sku,
@@ -96,6 +109,8 @@ export async function onRequestPost(context) {
     toInt(stock),
     price_ngn === null || price_ngn === '' ? null : toInt(price_ngn),
     price_usd === null || price_usd === '' ? null : toFloat(price_usd),
+    compare_at_ngn === null || compare_at_ngn === '' ? null : toInt(compare_at_ngn),
+    compare_at_usd === null || compare_at_usd === '' ? null : toFloat(compare_at_usd),
     active ? 1 : 0
   ).run();
 

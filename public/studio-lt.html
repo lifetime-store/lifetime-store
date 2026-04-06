@@ -73,6 +73,8 @@
           <article class="stat-card"><div class="stat-number" data-summary-pending>0</div><div class="stat-label">Pending activation</div></article>
           <article class="stat-card"><div class="stat-number" data-summary-active-batches>0</div><div class="stat-label">Active batches</div></article>
           <article class="stat-card"><div class="stat-number" data-summary-orders>0</div><div class="stat-label">Orders</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-buyers>0</div><div class="stat-label">Buyers</div></article>
+          <article class="stat-card"><div class="stat-number" data-summary-promotions>0</div><div class="stat-label">Promotions</div></article>
         </div>
 
         <div class="admin-grid section">
@@ -180,8 +182,62 @@
               <p class="muted" style="margin-top:0.9rem;">These labels stay inactive until you mark the batch ready and activate it. Customers can scan later for authenticity after activation.</p>
             </article>
 
+            
             <article class="panel">
-              <div class="eyebrow">5 · Upload cloth photos</div>
+              <div class="eyebrow">6 · Promotion engine</div>
+              <div data-promo-notice></div>
+              <form data-promotion-form>
+                <input type="hidden" name="promotion_id">
+                <div class="form-grid">
+                  <label>Title <input name="title" placeholder="Launch Week" required></label>
+                  <label>Slug <input name="slug" placeholder="launch-week" required></label>
+                  <label>Discount type
+                    <select name="discount_type"><option value="percent">percent</option><option value="fixed">fixed</option></select>
+                  </label>
+                  <label>Discount value <input name="discount_value" type="number" step="0.01" value="10"></label>
+                  <label>Badge text <input name="badge_text" placeholder="Launch offer"></label>
+                  <label>Apply scope <input name="apply_scope" value="storewide"></label>
+                </div>
+                <label>Banner text <input name="banner_text" placeholder="Event discount and buyer rewards are live."></label>
+                <div class="inline-checks">
+                  <label class="check-inline"><input type="checkbox" name="active" checked> Active</label>
+                  <label class="check-inline"><input type="checkbox" name="featured" checked> Featured banner</label>
+                </div>
+                <div class="inline-actions wrap">
+                  <button class="btn btn-primary" type="submit">Save promotion</button>
+                  <button class="btn btn-soft" type="button" data-promotion-reset>Reset</button>
+                </div>
+              </form>
+              <div class="divider"></div>
+              <form data-promo-code-form>
+                <input type="hidden" name="promo_code_id">
+                <div class="form-grid">
+                  <label>Promotion
+                    <select name="promotion_id" data-promotion-select></select>
+                  </label>
+                  <label>Promo code <input name="code" placeholder="LIFETIME10" required></label>
+                  <label>Type
+                    <select name="discount_type"><option value="percent">percent</option><option value="fixed">fixed</option></select>
+                  </label>
+                  <label>Value <input name="discount_value" type="number" step="0.01" value="10"></label>
+                  <label>Min subtotal <input name="min_subtotal" type="number" value="0"></label>
+                  <label>Tier gate
+                    <select name="tier_gate"><option value="">All buyers</option><option value="Classic">Classic</option><option value="Silver">Silver</option><option value="Gold">Gold</option><option value="Black">Black</option></select>
+                  </label>
+                </div>
+                <div class="form-grid">
+                  <label>Usage limit <input name="usage_limit" type="number"></label>
+                  <label class="check-inline"><input type="checkbox" name="active" checked> Active</label>
+                </div>
+                <div class="inline-actions wrap">
+                  <button class="btn btn-primary" type="submit">Save promo code</button>
+                  <button class="btn btn-soft" type="button" data-promo-code-reset>Reset</button>
+                </div>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">7 · Upload cloth photos</div>
               <div data-images-notice></div>
               <form data-image-form>
                 <div class="form-grid">
@@ -229,6 +285,19 @@
               <div class="eyebrow">Recent orders</div>
               <div data-admin-orders class="stack"></div>
             </article>
+
+            <article class="panel">
+              <div class="eyebrow">Promotions and codes</div>
+              <div data-admin-promotions class="stack"></div>
+              <div class="divider"></div>
+              <div data-admin-promo-codes class="stack"></div>
+            </article>
+
+            <article class="panel">
+              <div class="eyebrow">Buyer insights and premium levels</div>
+              <div data-admin-customers class="stack"></div>
+            </article>
+
           </div>
         </div>
       </section>

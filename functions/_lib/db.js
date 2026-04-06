@@ -10,6 +10,10 @@ export async function listProducts(env, featuredOnly = false) {
       p.description,
       p.price_ngn,
       p.price_usd,
+      p.compare_at_ngn,
+      p.compare_at_usd,
+      p.collection_label,
+      p.mood_label,
       p.materials,
       p.fit_notes,
       p.care,
@@ -69,7 +73,9 @@ export async function getProductBySlug(env, slug) {
   const variantsResult = await env.DB.prepare(`
     SELECT id, sku, color, color_code, size, size_code, stock,
            COALESCE(price_ngn, ?) AS price_ngn,
-           COALESCE(price_usd, ?) AS price_usd
+           COALESCE(price_usd, ?) AS price_usd,
+           compare_at_ngn,
+           compare_at_usd
     FROM variants
     WHERE product_id = ? AND active = 1
     ORDER BY color ASC, size ASC
@@ -84,6 +90,8 @@ export async function getProductBySlug(env, slug) {
 
   const variants = (variantsResult.results || []).map((variant) => ({
     ...variant,
+    compare_at_ngn: variant.compare_at_ngn ?? product.compare_at_ngn ?? null,
+    compare_at_usd: variant.compare_at_usd ?? product.compare_at_usd ?? null,
     stock: Number(variant.stock || 0)
   }));
   const totalStock = variants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
@@ -116,7 +124,7 @@ export async function getBatchWithProduct(env, batchId) {
 }
 
 export async function dashboardSummary(env) {
-  const [products, batches, codes, issues, orders, lowStock, pendingActivation, activeBatches] = await Promise.all([
+  const [products, batches, codes, issues, orders, lowStock, pendingActivation, activeBatches, promotions, buyers] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS total FROM products`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM batches`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes`).first(),
@@ -124,7 +132,9 @@ export async function dashboardSummary(env) {
     env.DB.prepare(`SELECT COUNT(*) AS total FROM orders`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM variants WHERE active = 1 AND stock <= 5`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes WHERE status IN ('generated','printed','attached','received','draft')`).first(),
-    env.DB.prepare(`SELECT COUNT(*) AS total FROM batches WHERE status = 'active'`).first()
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM batches WHERE status = 'active'`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM promotions WHERE active = 1`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM customers`).first()
   ]);
 
   return {
@@ -135,6 +145,8 @@ export async function dashboardSummary(env) {
     orders: orders?.total || 0,
     lowStock: lowStock?.total || 0,
     pendingActivation: pendingActivation?.total || 0,
-    activeBatches: activeBatches?.total || 0
+    activeBatches: activeBatches?.total || 0,
+    promotions: promotions?.total || 0,
+    buyers: buyers?.total || 0
   };
 }
