@@ -2,18 +2,15 @@ import { requireAdmin } from '../../_lib/auth.js';
 
 function csvEscape(value) {
   const text = String(value ?? '');
-  if (/[",
-]/.test(text)) return '"' + text.replaceAll('"', '""') + '"';
+  if (/[",\n]/.test(text)) return '"' + text.replaceAll('"', '""') + '"';
   return text;
 }
 function rowsToCsv(rows) {
-  if (!rows.length) return 'no_data
-';
+  if (!rows.length) return 'no_data\n';
   const headers = Object.keys(rows[0]);
   const lines = [headers.join(',')];
   for (const row of rows) lines.push(headers.map((key) => csvEscape(row[key])).join(','));
-  return lines.join('
-');
+  return lines.join('\n');
 }
 
 export async function onRequestGet(context) {
