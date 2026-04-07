@@ -8,7 +8,12 @@ function deliveryFeeBlock(order, fees = []) {
   return `<article><strong>Delivery fee</strong><p class="muted">${escapeHtml(latest.status)} · ${formatNGN(latest.amount_ngn || 0)} · ${escapeHtml(latest.reason || '')}</p>${latest.status !== 'paid' ? `<button class="btn btn-primary" type="button" data-pay-delivery-fee="${escapeHtml(latest.fee_code)}">Pay delivery fee</button>` : '<span class="pill">Paid</span>'}</article>`;
 }
 
-function renderHistory(order, history = [], delivery = null, deliveryHistory = [], deliveryFees = []) {
+function addressBlock(order, addressConfirmation) {
+  const confirmed = Boolean(addressConfirmation && addressConfirmation.status === 'confirmed');
+  return `<section class="panel luxury-panel"><div class="eyebrow">Delivery details</div><h3>${confirmed ? 'Address confirmed' : 'Confirm your delivery details'}</h3><p class="muted">Confirm the exact delivery name, phone, and address after payment so dispatch moves faster.</p>${confirmed ? `<div class="details-list compact-grid"><article><strong>Recipient</strong><p class="muted">${escapeHtml(addressConfirmation.recipient_name || order.customer_name || '')}</p></article><article><strong>Phone</strong><p class="muted">${escapeHtml(addressConfirmation.recipient_phone || order.phone || '')}</p></article><article><strong>Destination</strong><p class="muted">${escapeHtml([addressConfirmation.address, addressConfirmation.city, addressConfirmation.country].filter(Boolean).join(', '))}</p></article><article><strong>Confirmed</strong><p class="muted">${escapeHtml(addressConfirmation.confirmed_at || '')}</p></article></div>` : `<form data-address-confirm-form><input type="hidden" name="order_number" value="${escapeHtml(order.order_number)}"><input type="hidden" name="email" value="${escapeHtml(order.email)}"><div class="confirmation-grid"><label>Recipient name<input name="recipient_name" value="${escapeHtml(order.customer_name || '')}" required></label><label>Phone<input name="recipient_phone" value="${escapeHtml(order.phone || '')}" required></label><label>Country<input name="country" value="${escapeHtml(order.country || '')}"></label><label>City or state<input name="city" value="${escapeHtml(order.city || '')}"></label></div><label>Delivery address<textarea name="address" required>${escapeHtml(order.address || '')}</textarea></label><label>Dispatch note<textarea name="note" placeholder="Landmark, best delivery time, or extra note for the delivery team."></textarea></label><button class="btn btn-primary" type="submit">Confirm delivery details</button></form>`}</section>`;
+}
+
+function renderHistory(order, history = [], delivery = null, deliveryHistory = [], deliveryFees = [], addressConfirmation = null) {
   const mount = document.querySelector('[data-order-track-result]');
   if (!mount) return;
   const timeline = history.length ? history.map(step => `<li><strong>${escapeHtml(step.status)}</strong><span class="muted">${escapeHtml(step.created_at || '')}</span>${step.note ? `<p class="muted">${escapeHtml(step.note)}</p>` : ''}</li>`).join('') : `<li><strong>${escapeHtml(order.status)}</strong><span class="muted">Current status</span></li>`;
@@ -28,12 +33,20 @@ function renderHistory(order, history = [], delivery = null, deliveryHistory = [
         ${delivery ? `<article><strong>ETA</strong><p class="muted">${escapeHtml(delivery.eta_text || 'Will appear after dispatch')}</p></article>` : ''}
         ${deliveryFeeBlock(order, deliveryFees)}
       </div>
-      <div class="divider"></div>
+      <div class="divider"></div>${addressBlock(order, addressConfirmation)}<div class="divider"></div>
       <div class="split-grid">
         <div><div class="eyebrow">Order timeline</div><ol class="timeline-list">${timeline}</ol></div>
         <div><div class="eyebrow">Delivery timeline</div><ol class="timeline-list">${deliveryTimeline}</ol></div>
       </div>
     </section>`;
+  mount.querySelector('[data-address-confirm-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const fd = new FormData(event.currentTarget);
+    const payload = Object.fromEntries(fd.entries());
+    const result = await apiPost('/api/order-confirmation', payload);
+    alert(result.message || (result.ok ? 'Saved.' : 'Could not confirm details.'));
+    if (result.ok) form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+  });
   mount.querySelector('[data-pay-delivery-fee]')?.addEventListener('click', async (event) => {
     const feeCode = event.currentTarget.dataset.payDeliveryFee;
     const res = await apiPost('/api/paystack/delivery-fee-pay', { fee_code: feeCode });
@@ -58,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setNotice('');
     const result = await apiGet(`/api/order-status/${encodeURIComponent(identifier)}${email ? `?email=${encodeURIComponent(email)}` : ''}`);
     if (!result.ok) { setNotice(`<div class="notice notice-danger">${escapeHtml(result.message || 'Order not found.')}</div>`); return; }
-    renderHistory(result.order, result.history || [], result.delivery || null, result.deliveryHistory || [], result.deliveryFees || []);
+    renderHistory(result.order, result.history || [], result.delivery || null, result.deliveryHistory || [], result.deliveryFees || [], result.addressConfirmation || null);
   });
   if (params.get('order')) form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
 });

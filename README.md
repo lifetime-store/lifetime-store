@@ -85,3 +85,10 @@ This package can use Cloudflare Workers AI for the support assistant on `/suppor
 ### Mail routing
 - `SUPPORT_EMAIL` receives support-form alerts
 - `ORDERS_EMAIL` receives order and delivery alerts
+
+
+## Final legal/community upgrade
+- Added customer policy hub and legal pages
+- Added community channel page
+- Added delivery address confirmation flow
+- Run migration 0009_policies_community_address.sql
