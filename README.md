@@ -68,8 +68,6 @@ This package adds:
 No new D1 migration is required for this upgrade because it uses the existing `site_settings` table.
 
 
-Final touch update:
-- cleaner storefront copy
-- shorter checkout and support text
-- banner now prefers your admin notice instead of stacking multiple messages
-- local currency preview hides when shopper currency is already NGN
+## Advanced storefront upgrade
+Run `migrations/0007_advanced_storefront_upgrade.sql` to enable wishlist, restock requests, order tracking history, and editable policy content.
+This package also adds order tracking, policy pages, search/filter/sort, support/orders split, wishlist, restock requests, and an admin audit view.

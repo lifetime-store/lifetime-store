@@ -1,4 +1,4 @@
-import { addToCart, apiGet, escapeHtml, localizePriceFromUSD, qs } from './api.js';
+import { addToCart, addToWishlist, apiGet, apiPost, escapeHtml, localizePriceFromUSD, qs } from './api.js';
 
 function groupVariants(variants) {
   return {
@@ -61,7 +61,7 @@ async function loadProduct() {
         </div>
         <div class="price-line">
           <span class="price-main">${localPrice.formatted}</span>
-          ${localPrice.currency === 'NGN' ? '' : `<span class=\"price-alt\">Checkout in NGN</span>`}
+          <span class="price-alt">${Number(product.price_usd || 0).toFixed(2)} USD base</span>
           ${localPrice.formattedCompare ? `<span class="price-compare">${localPrice.formattedCompare}</span>` : ''}
         </div>
         <div class="divider"></div>
@@ -69,7 +69,7 @@ async function loadProduct() {
           <article><strong>Fit</strong><p class="muted">${escapeHtml(product.fit_notes || 'Slightly relaxed premium fit.')}</p></article>
           <article><strong>Materials</strong><p class="muted">${escapeHtml(product.materials || 'Premium fabric build.')}</p></article>
           <article><strong>Care</strong><p class="muted">${escapeHtml(product.care || 'Follow the care label for best lifespan.')}</p></article>
-          <article><strong>Support</strong><p class="muted">support@lifetime-store.shop</p></article>
+          <article><strong>Support</strong><p class="muted">Need help before or after purchase? Contact support@lifetime-store.shop.</p></article>
         </div>
         <form data-add-cart-form>
           <label>Color<select name="color">${colors.map((color) => `<option value="${escapeHtml(color)}">${escapeHtml(color)}</option>`).join('')}</select></label>
@@ -77,9 +77,10 @@ async function loadProduct() {
           <label>Quantity<input type="number" name="quantity" value="1" min="1" max="20"></label>
           <div class="notice notice-warning hide" data-stock-warning></div>
           <div class="inline-actions">
-            <button class="btn btn-primary" type="submit" data-cart-submit>Add to Cart</button>
-            <a class="btn btn-soft" href="/verify.html">Authenticity Promise</a>
-          </div>
+            <button class="btn btn-primary" type="submit" data-cart-submit>Add to cart</button>
+            <button class="btn btn-soft" type="button" data-wishlist-btn>Save</button>
+            <a class="btn btn-soft" href="/size-guide.html">Size guide</a>
+          </div><div class="inline-actions" style="margin-top:0.8rem"><a class="btn btn-soft" href="/verify.html">Verify</a><a class="btn btn-soft" href="/shipping.html">Shipping</a><button class="btn btn-soft hide" type="button" data-restock-btn>Request restock</button></div>
         </form>
       </article>
     </div>
@@ -110,17 +111,39 @@ async function loadProduct() {
       submitBtn.textContent = 'Sold out';
       warning.classList.remove('hide');
       warning.textContent = 'This size and color is currently sold out.';
+      restockBtn?.classList.remove('hide');
     } else {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Add to Cart';
       warning.classList.remove('hide');
       warning.textContent = stock <= 5 ? `Only ${stock} left in this variant.` : `${stock} available in this variant.`;
+      restockBtn?.classList.add('hide');
     }
   }
 
+  const wishlistBtn = mount.querySelector('[data-wishlist-btn]');
+  const restockBtn = mount.querySelector('[data-restock-btn]');
   form.color.addEventListener('change', refreshVariantState);
   form.size.addEventListener('change', refreshVariantState);
   refreshVariantState();
+
+  wishlistBtn?.addEventListener('click', async () => {
+    const color = form.color.value;
+    const size = form.size.value;
+    const variant = product.variants.find((entry) => entry.color === color && entry.size === size) || firstVariant;
+    const result = await addToWishlist({ item_key: `${product.slug}:${variant.id}`, product_id: product.id, variant_id: variant.id });
+    alert(result.message || 'Saved.');
+  });
+
+  restockBtn?.addEventListener('click', async () => {
+    const email = window.prompt('Enter your email for restock notice');
+    if (!email) return;
+    const color = form.color.value;
+    const size = form.size.value;
+    const variant = product.variants.find((entry) => entry.color === color && entry.size === size) || firstVariant;
+    const result = await apiPost('/api/restock', { email, product_id: product.id, variant_id: variant.id });
+    alert(result.message || 'Saved.');
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();

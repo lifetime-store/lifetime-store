@@ -400,9 +400,8 @@ async function loadSettings() {
   state.settings = res.settings || {};
   const form = document.querySelector('[data-settings-form]');
   if (!form) return;
-  form.store_notice_badge.value = state.settings.store_notice_badge || 'Store notice';
-  form.store_notice.value = state.settings.store_notice || '';
-  form.verify_scanner_hint.value = state.settings.verify_scanner_hint || '';
+  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'];
+  fields.forEach((key) => { if (form[key]) form[key].value = state.settings[key] || ''; });
 }
 
 
@@ -416,7 +415,7 @@ async function refreshDashboard() {
 
   showShell(true);
   renderSummary(summary.summary || {});
-  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders(), loadPromotions(), loadCustomers(), loadSettings()]);
+  await Promise.all([loadProducts(), loadVariants(), loadBatches(), loadCodes(), loadOrders(), loadPromotions(), loadCustomers(), loadSettings(), loadAudit()]);
 }
 
 async function loadProducts() {
@@ -494,6 +493,15 @@ async function loadCodes() {
   }
   state.codes = res.codes || [];
   mount.innerHTML = state.codes.length ? state.codes.slice(0, 40).map(codeCard).join("") : `<div class="empty-state">No authenticity labels generated yet.</div>`;
+}
+
+async function loadAudit() {
+  const mount = document.querySelector('[data-admin-audit]');
+  if (!mount) return;
+  const res = await apiGet('/api/admin/audit', true);
+  if (!res.ok) { mount.innerHTML = `<div class="empty-state">${escapeHtml(res.message || 'Could not load audit log.')}</div>`; return; }
+  const logs = res.logs || [];
+  mount.innerHTML = logs.length ? logs.map((log) => `<article class="simple-row"><strong>${escapeHtml(log.action)}</strong><div class="muted">${escapeHtml(log.actor || 'owner')} · ${escapeHtml(log.created_at || '')}</div><div class="muted">${escapeHtml(log.target_type || '')}${log.target_id ? ` #${log.target_id}` : ''}</div></article>`).join('') : `<div class="empty-state">No admin activity yet.</div>`;
 }
 
 async function loadOrders() {
@@ -943,11 +951,7 @@ function bindForms() {
 document.querySelector('[data-settings-form]')?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const payload = {
-    store_notice_badge: form.store_notice_badge.value.trim(),
-    store_notice: form.store_notice.value.trim(),
-    verify_scanner_hint: form.verify_scanner_hint.value.trim()
-  };
+  const payload = {}; ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'].forEach((key) => { if (form[key]) payload[key] = form[key].value.trim(); });
   const result = await apiPost('/api/admin/settings', payload, true);
   notice('[data-settings-notice]', escapeHtml(result.message || 'Saved.'), result.ok ? 'success' : 'danger');
   if (result.ok) await loadSettings();
@@ -956,9 +960,8 @@ document.querySelector('[data-settings-form]')?.addEventListener('submit', async
 document.querySelector('[data-settings-reset]')?.addEventListener('click', () => {
   const form = document.querySelector('[data-settings-form]');
   if (!form) return;
-  form.store_notice_badge.value = state.settings.store_notice_badge || 'Store notice';
-  form.store_notice.value = state.settings.store_notice || '';
-  form.verify_scanner_hint.value = state.settings.verify_scanner_hint || '';
+  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'];
+  fields.forEach((key) => { if (form[key]) form[key].value = state.settings[key] || ''; });
 });
 
 

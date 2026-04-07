@@ -1,6 +1,7 @@
 const CART_KEY = 'lifetime_cart_v3';
 const ADMIN_TOKEN_KEY = 'lifetime_admin_token';
 const CUSTOMER_KEY = 'lifetime_customer';
+const CURRENCY_OVERRIDE_KEY = 'lifetime_currency_override';
 let storefrontMetaPromise = null;
 
 async function readJsonSafe(res) {
@@ -34,10 +35,7 @@ export async function apiPost(url, payload, admin = false) {
   const headers = { 'Content-Type': 'application/json' };
   if (admin && getAdminToken()) headers['X-Admin-Token'] = getAdminToken();
   const res = await fetch(url, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify(payload)
+    method: 'POST', headers, credentials: 'include', body: JSON.stringify(payload)
   });
   return readJsonSafe(res);
 }
@@ -46,22 +44,7 @@ export async function apiDelete(url, payload = {}, admin = false) {
   const headers = { 'Content-Type': 'application/json' };
   if (admin && getAdminToken()) headers['X-Admin-Token'] = getAdminToken();
   const res = await fetch(url, {
-    method: 'DELETE',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify(payload)
-  });
-  return readJsonSafe(res);
-}
-
-export async function apiPostForm(url, formData, admin = false) {
-  const headers = {};
-  if (admin && getAdminToken()) headers['X-Admin-Token'] = getAdminToken();
-  const res = await fetch(url, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: formData
+    method: 'DELETE', headers, credentials: 'include', body: JSON.stringify(payload)
   });
   return readJsonSafe(res);
 }
@@ -74,13 +57,8 @@ export function formatMoney(value, currency = 'USD', locale = 'en-US', maximumFr
   }).format(Number(value || 0));
 }
 
-export function formatNGN(value) {
-  return formatMoney(value, 'NGN', 'en-NG', 0);
-}
-
-export function formatUSD(value) {
-  return formatMoney(value, 'USD', 'en-US', 2);
-}
+export function formatNGN(value) { return formatMoney(value, 'NGN', 'en-NG', 0); }
+export function formatUSD(value) { return formatMoney(value, 'USD', 'en-US', 2); }
 
 export async function getStorefrontMeta(force = false) {
   if (!storefrontMetaPromise || force) {
@@ -91,26 +69,60 @@ export async function getStorefrontMeta(force = false) {
       usdRate: 1550,
       promotion: null,
       storeNotice: '',
-      storeNoticeBadge: 'Store notice',
-      verifyScannerHint: 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually.'
+      storeNoticeBadge: 'Store update',
+      verifyScannerHint: 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually or upload a label photo.',
+      hero_eyebrow: 'Quiet premium daily wear',
+      hero_title: 'Refined essentials built to outlast noise.',
+      hero_copy: 'Lifetime creates premium essentials with clean structure, durable fabric, and verified authenticity.',
+      hero_cta_label: 'Shop collection',
+      hero_cta_href: '/shop.html',
+      shipping_policy_html: '',
+      returns_policy_html: '',
+      exchange_policy_html: '',
+      size_guide_html: '',
+      collection_intro: ''
     });
   }
   return storefrontMetaPromise;
 }
 
+export function getCurrencyOverride() {
+  return localStorage.getItem(CURRENCY_OVERRIDE_KEY) || '';
+}
+
+export function setCurrencyOverride(currency) {
+  if (currency) localStorage.setItem(CURRENCY_OVERRIDE_KEY, currency);
+  else localStorage.removeItem(CURRENCY_OVERRIDE_KEY);
+}
+
+function deriveLocale(currency) {
+  const map = { NGN: 'en-NG', USD: 'en-US', GBP: 'en-GB', EUR: 'en-IE', CAD: 'en-CA', AUD: 'en-AU', AED: 'en-AE', ZAR: 'en-ZA', KES: 'en-KE', GHS: 'en-GH', XOF: 'fr-SN' };
+  return map[currency] || 'en-US';
+}
+
 export async function localizePriceFromUSD(usdValue, compareAtUSD = null) {
   const meta = await getStorefrontMeta();
-  const rate = Number(meta.usdRate || 1);
+  const override = getCurrencyOverride();
+  const effectiveCurrency = override || meta.currency || 'USD';
+  let rate = Number(meta.usdRate || 1);
+  let locale = meta.locale || deriveLocale(effectiveCurrency);
+  if (override && meta.content?.usd_rates_json) {
+    try {
+      const rates = JSON.parse(meta.content.usd_rates_json);
+      rate = Number(rates[override] || rate);
+    } catch {}
+    locale = deriveLocale(override);
+  }
   const value = Number(usdValue || 0) * rate;
   const compareValue = compareAtUSD ? Number(compareAtUSD || 0) * rate : null;
   return {
-    currency: meta.currency,
-    locale: meta.locale,
+    currency: effectiveCurrency,
+    locale,
     country: meta.country,
     value,
     compareValue,
-    formatted: formatMoney(value, meta.currency, meta.locale, meta.currency === 'USD' ? 2 : 0),
-    formattedCompare: compareValue ? formatMoney(compareValue, meta.currency, meta.locale, meta.currency === 'USD' ? 2 : 0) : ''
+    formatted: formatMoney(value, effectiveCurrency, locale, effectiveCurrency === 'USD' ? 2 : 0),
+    formattedCompare: compareValue ? formatMoney(compareValue, effectiveCurrency, locale, effectiveCurrency === 'USD' ? 2 : 0) : ''
   };
 }
 
@@ -155,9 +167,7 @@ export async function removeCartItem(key) {
 
 export async function clearCart() {
   localStorage.removeItem(CART_KEY);
-  if (getCustomer()) {
-    await apiDelete('/api/cart');
-  }
+  if (getCustomer()) await apiDelete('/api/cart');
   updateCartCount();
 }
 
@@ -204,9 +214,7 @@ export async function loadCustomer() {
 export async function syncCartFromServer() {
   if (!getCustomer()) return getCart();
   const local = getCart();
-  if (local.length) {
-    await apiPost('/api/cart', { items: local });
-  }
+  if (local.length) await apiPost('/api/cart', { items: local });
   const result = await apiGet('/api/cart');
   if (result.ok && Array.isArray(result.items)) {
     saveCart(result.items);
@@ -226,14 +234,40 @@ export async function renderStorefrontBanner() {
   const meta = await getStorefrontMeta();
   document.querySelectorAll('[data-storefront-banner]').forEach((el) => {
     const promo = meta.promotion;
-    const text = meta.storeNotice || promo?.banner_text || '';
-    if (!String(text || '').trim()) {
+    const parts = [];
+    if (promo?.banner_text) parts.push(escapeHtml(promo.banner_text));
+    if (meta.storeNotice) parts.push(escapeHtml(meta.storeNotice));
+    if (!parts.length) {
       el.classList.add('hide');
       return;
     }
-    const badge = meta.storeNotice ? (meta.storeNoticeBadge || '') : (promo?.badge_text || '');
+    const badge = promo?.badge_text || meta.storeNoticeBadge || '';
     el.classList.remove('hide');
-    el.innerHTML = `<div class="container banner-inner"><strong>${badge ? escapeHtml(badge) + ' · ' : ''}${escapeHtml(text)}</strong></div>`;
+    el.innerHTML = `<div class="container banner-inner"><strong>${badge ? escapeHtml(badge) + ' · ' : ''}${parts.join(' ')}</strong></div>`;
+  });
+}
+
+export async function getWishlist() {
+  const result = await apiGet('/api/wishlist');
+  return Array.isArray(result.items) ? result.items : [];
+}
+
+export async function addToWishlist(item) {
+  return apiPost('/api/wishlist', item);
+}
+
+export async function removeFromWishlist(itemKey) {
+  return apiDelete('/api/wishlist', { item_key: itemKey });
+}
+
+export function bindCurrencySelector(root = document) {
+  root.querySelectorAll('[data-currency-select]').forEach((select) => {
+    select.value = getCurrencyOverride() || '';
+    select.addEventListener('change', async () => {
+      setCurrencyOverride(select.value);
+      await getStorefrontMeta(true);
+      window.dispatchEvent(new CustomEvent('lifetime:currency-change'));
+    });
   });
 }
 
@@ -241,5 +275,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
   updateAccountLinks();
   renderStorefrontBanner();
+  bindCurrencySelector();
   try { await loadCustomer(); } catch {}
 });

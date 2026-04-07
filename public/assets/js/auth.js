@@ -109,8 +109,10 @@ async function renderAccount() {
     return;
   }
 
-  const cartResult = await apiGet('/api/cart');
+  const [cartResult, wishlistResult, ordersResult] = await Promise.all([apiGet('/api/cart'), apiGet('/api/wishlist'), apiGet(`/api/admin/customers?customer_id=${customer.id}`)]);
   const itemCount = Array.isArray(cartResult.items) ? cartResult.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0) : 0;
+  const wishlistCount = Array.isArray(wishlistResult.items) ? wishlistResult.items.length : 0;
+  const orderCount = Number(customer.paid_orders || 0);
   const currentLevel = Number(customer.rank_level || 1);
   const nextTier = customer.next_tier_name || 'Star 5';
   const ordersToNext = Number(customer.next_tier_orders_needed || 0);
@@ -135,11 +137,11 @@ async function renderAccount() {
       <article><strong>Email</strong><p class="muted">${customer.email}</p></article>
       <article><strong>Successful orders</strong><p class="muted">${Number(customer.paid_orders || 0)} completed paid order(s)</p></article>
       <article><strong>Loyalty points</strong><p class="muted">${Number(customer.loyalty_points || 0)} point(s)</p></article>
-      <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article>
+      <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article><article><strong>Wishlist</strong><p class="muted">${wishlistCount} saved item${wishlistCount === 1 ? '' : 's'}.</p></article><article><strong>Track orders</strong><p class="muted">${orderCount} successful order${orderCount === 1 ? '' : 's'} counted toward your rank. <a href="/order-status.html">Track order</a></p></article>
     </div>
     <div class="inline-actions">
       <a class="btn btn-primary" href="/shop.html">Continue shopping</a>
-      <a class="btn btn-soft" href="/checkout.html">Go to checkout</a>
+      <a class="btn btn-soft" href="/checkout.html">Go to checkout</a><a class="btn btn-soft" href="/order-status.html">Track order</a>
       <button class="btn btn-danger" type="button" data-logout-btn>Log out</button>
     </div>
   `;

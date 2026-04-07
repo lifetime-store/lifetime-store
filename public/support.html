@@ -4,15 +4,58 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Support — Lifetime</title>
-  <meta name="description" content="Customer support for Lifetime.">
+  <meta name="description" content="Support for Lifetime orders, authenticity checks, and product issues.">
   <link rel="stylesheet" href="/assets/css/styles.css">
 </head>
 <body>
-<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/about.html">About</a><a href="/support.html">Support</a><a href="/account.html">Account</a></nav><div class="nav-actions"><a class="badge" href="/account.html" data-account-link>Account</a><a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a></div></div></header>
+<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/about.html">About</a><a href="/support.html">Support</a>
+        <a href="/order-status.html">Orders</a>
+        <a href="/account.html">Account</a>
+      </nav><div class="nav-actions">
+        <a class="badge" href="/account.html" data-account-link>Account</a>
+        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
+      </div></div></header>
 <div class="storefront-banner hide" data-storefront-banner></div>
-<main class="section"><div class="container split-grid"><section class="panel luxury-panel"><div class="eyebrow">Support</div><h1 style="font-size: clamp(2rem, 5vw, 4rem);">How can we help?</h1><p class="lead">Use this form for order help, product issues, delivery questions, or verification concerns.</p><div data-support-notice></div><form data-support-form class="stack"><label>Full name <input name="name" required></label><label>Email <input type="email" name="email" required></label><label>Subject <input name="subject" required></label><label>Message <textarea name="message" rows="6" required></textarea></label><button class="btn btn-primary" type="submit">Send message</button></form></section><aside class="panel luxury-panel"><div class="eyebrow">Support info</div><div class="details-list"><article><strong>Email</strong><p class="muted">support@lifetime-store.shop</p></article><article><strong>Orders</strong><p class="muted">orders@lifetime-store.shop</p></article><article><strong>Verification</strong><p class="muted">Include the code if your issue is about authenticity.</p></article></div></aside></div></main>
-<footer class="footer"><div class="container footer-grid footer-grid-wide"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><div class="footer-contact"><a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/about.html">About</a></nav></div></footer>
+<main class="section">
+  <div class="container split-grid">
+    <section class="panel luxury-panel">
+      <div class="eyebrow">Support</div>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">How can we help?</h1>
+      <p class="lead">Use this form for product questions, authenticity concerns, quality issues, or general help.</p>
+      <div class="support-direct-line">General support: <a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a> · Order help: <a href="/order-status.html">Track order</a></div>
+      <div data-support-notice></div>
+      <form data-support-form>
+        <div class="form-grid">
+          <label>Issue type
+            <select name="issue_type">
+              <option value="authenticity">Authenticity concern</option>
+              <option value="quality">Product quality</option>
+                            <option value="other">Other</option>
+            </select>
+          </label>
+          <label>Authenticity code
+            <input name="serial_code" placeholder="Optional">
+          </label>
+          <label>Name <input name="name" required></label>
+          <label>Email <input type="email" name="email" required></label>
+        </div>
+        <label>Message <textarea name="message" required placeholder="Tell us what happened"></textarea></label>
+        <button class="btn btn-primary" type="submit">Send request</button>
+      </form>
+    </section>
+    <aside class="panel luxury-panel">
+      <div class="eyebrow">Support standards</div>
+      <div class="details-list">
+        <article><strong>Direct help</strong><p class="muted">Customers can contact Lifetime about genuine orders, product concerns, and verification issues in one place.</p></article>
+        <article><strong>Traceability</strong><p class="muted">Authenticity codes and batch records make it easier to review genuine product history.</p></article>
+        <article><strong>Response visibility</strong><p class="muted">New support issues are routed to your configured alert mailbox for faster action.</p></article>
+        <article><strong>Order assistance</strong><p class="muted">Order tracking and delivery updates live on <a href="/order-status.html">the orders page</a>.</p></article>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer class="footer"><div class="container footer-grid footer-grid-wide"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><div class="footer-contact"><a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/about.html">About</a><a href="/shipping.html">Shipping</a><a href="/size-guide.html">Size guide</a></nav></div></footer>
 <script type="module" src="/assets/js/api.js"></script>
-<script type="module" src="/assets/js/site.js"></script>
+<script type="module" src="/assets/js/verify.js"></script>
 </body>
 </html>

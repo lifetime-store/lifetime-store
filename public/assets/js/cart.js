@@ -28,7 +28,7 @@ async function renderCart() {
           <button class="btn btn-soft" data-cart-plus="${index}">+</button>
           <button class="btn btn-danger" data-cart-remove="${item.key}">Remove</button>
         </div>
-        <div class="price-line"><span class="price-main">${formatNGN(item.unit_price * item.quantity)}</span>${local.currency === 'NGN' ? '' : `<span class=\"price-alt\">${local.formatted}</span>`}</div>
+        <div class="price-line"><span class="price-main">${formatNGN(item.unit_price * item.quantity)}</span><span class="price-alt">${local.formatted} regional preview</span></div>
       </article>
     `;
   }));
@@ -39,7 +39,7 @@ async function renderCart() {
   if (localTotals) {
     const meta = await getStorefrontMeta();
     const local = await localizePriceFromUSD(subtotal / Number(meta.usdRate || 1550) || 0);
-    localTotals.textContent = meta.currency === 'NGN' ? '' : local.formatted;
+    localTotals.textContent = `${local.formatted} · ${meta.currency} preview`;
   }
 
   mount.querySelectorAll('[data-cart-minus]').forEach((button) => button.addEventListener('click', () => updateItem(Number(button.dataset.cartMinus), -1)));

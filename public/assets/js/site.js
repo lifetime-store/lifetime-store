@@ -17,10 +17,17 @@ async function productPriceMarkup(product) {
   return `
     <div class="price-line">
       <span class="price-main">${localized.formatted}</span>
-      ${localized.currency === 'NGN' ? '' : `<span class=\"price-alt\">Checkout in NGN</span>`}
+      <span class="price-alt">Base ${escapeHtml(localized.country)} region · ${Number(product.price_usd || 0).toFixed(2)} USD</span>
       ${localized.formattedCompare ? `<span class="price-compare">${localized.formattedCompare}</span>` : ''}
     </div>
   `;
+}
+
+function setHeroFromMeta(meta) {
+  document.querySelectorAll('[data-hero-eyebrow]').forEach((el) => el.textContent = meta.hero_eyebrow || 'Quiet premium essentials');
+  document.querySelectorAll('[data-hero-title]').forEach((el) => el.textContent = meta.hero_title || 'Refined essentials built to outlast noise.');
+  document.querySelectorAll('[data-hero-copy]').forEach((el) => el.textContent = meta.hero_copy || 'Lifetime builds premium essentials with clean structure and verified authenticity.');
+  document.querySelectorAll('[data-hero-cta]').forEach((el) => { el.textContent = meta.hero_cta_label || 'Shop collection'; el.setAttribute('href', meta.hero_cta_href || '/shop.html'); });
 }
 
 async function loadFeaturedProducts() {
@@ -33,10 +40,9 @@ async function loadFeaturedProducts() {
   ]);
   const products = data.products || [];
 
+  setHeroFromMeta(meta);
   const spotlight = document.querySelector('[data-region-copy]');
-  if (spotlight) {
-    spotlight.textContent = meta.currency === 'NGN' ? '' : `Prices shown in ${meta.currency}. Checkout in NGN.`;
-  }
+  if (spotlight) { spotlight.textContent = meta.currency === 'NGN' ? '' : `Preview shown in ${meta.currency} for ${meta.country}. Final payment remains in NGN.`; }
 
   if (!products.length) {
     mount.innerHTML = `<div class="empty-state">No products are live yet. Your first drop will appear here.</div>`;

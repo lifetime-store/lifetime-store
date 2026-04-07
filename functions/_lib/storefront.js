@@ -23,6 +23,24 @@ const DEFAULT_LOCALE = {
   AED: 'en-AE', ZAR: 'en-ZA', KES: 'en-KE', GHS: 'en-GH', XOF: 'fr-SN'
 };
 
+const DEFAULT_CONTENT = {
+  store_notice: 'Worldwide pricing preview adjusts to the shopper region. Final settlement is completed securely in NGN at checkout.',
+  store_notice_badge: 'Store update',
+  verify_scanner_hint: 'Use your phone camera on the cloth label. If camera access is denied, you can still enter the code manually or upload a label photo.',
+  hero_eyebrow: 'Quiet premium daily wear',
+  hero_title: 'Refined essentials built to outlast noise.',
+  hero_copy: 'Lifetime creates premium essentials with clean structure, durable fabric, and verified authenticity.',
+  hero_cta_label: 'Shop collection',
+  hero_cta_href: '/shop.html',
+  shipping_policy_html: '<h2>Shipping</h2><p>Orders are processed after payment verification.</p>',
+  returns_policy_html: '<h2>Returns</h2><p>Return requests should be made through support with your order number.</p>',
+  exchange_policy_html: '<h2>Exchanges</h2><p>Exchange availability depends on current stock.</p>',
+  size_guide_html: '<h2>Size guide</h2><p>Use garment measurements and fit notes before checkout.</p>',
+  collection_intro: 'Explore edited collections, seasonal drops, and core essentials.',
+  support_intro: 'Product questions, authenticity concerns, and quality issues are handled here.',
+  orders_intro: 'Track active orders, delivery progress, and payment-linked updates here.'
+};
+
 export async function getSetting(env, key, fallback = null) {
   try {
     const row = await env.DB.prepare(`SELECT value FROM site_settings WHERE key = ? LIMIT 1`).bind(key).first();
@@ -36,9 +54,6 @@ export async function getStorefrontMeta(env, request) {
   const cfCountry = request?.cf?.country || 'NG';
   const countryJson = await getSetting(env, 'country_currency_json', JSON.stringify(DEFAULT_COUNTRY_CURRENCY));
   const rateJson = await getSetting(env, 'usd_rates_json', JSON.stringify(DEFAULT_USD_RATES));
-  const storeNotice = await getSetting(env, 'store_notice', 'Checkout is completed in NGN. International visitors see a local price preview.');
-  const storeNoticeBadge = await getSetting(env, 'store_notice_badge', 'Store notice');
-  const verifyScannerHint = await getSetting(env, 'verify_scanner_hint', 'Open this page in Safari or Chrome for the best camera support.');
 
   let countryCurrency = DEFAULT_COUNTRY_CURRENCY;
   let usdRates = DEFAULT_USD_RATES;
@@ -49,16 +64,19 @@ export async function getStorefrontMeta(env, request) {
   const locale = DEFAULT_LOCALE[currency] || 'en-US';
   const rate = Number(usdRates[currency] || 1);
   const promotion = await getActivePromotion(env);
+  const content = {};
+  for (const [key, fallback] of Object.entries(DEFAULT_CONTENT)) {
+    content[key] = await getSetting(env, key, fallback);
+  }
 
   return {
     country: cfCountry,
     currency,
     locale,
     usdRate: rate,
-    storeNotice,
-    storeNoticeBadge,
-    verifyScannerHint,
-    promotion
+    promotion,
+    ...content,
+    content
   };
 }
 

@@ -1,0 +1,43 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Order tracking — Lifetime</title>
+  <meta name="description" content="Track your Lifetime order.">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body>
+<header class="site-header"><div class="container nav"><a href="/" class="brand"><span class="brand-mark">LT</span><span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span></a><nav class="nav-links"><a href="/">Home</a><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/order-status.html">Orders</a><a href="/account.html">Account</a></nav><div class="nav-actions"><a class="badge" href="/account.html" data-account-link>Account</a><a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a></div></div></header>
+<div class="storefront-banner hide" data-storefront-banner></div>
+<main class="section">
+  <div class="container split-grid">
+    <section class="panel luxury-panel">
+      <div class="eyebrow">Orders</div>
+      <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Track your order</h1>
+      <p class="muted">Enter your order number and the email used at checkout.</p>
+      <div data-order-track-notice></div>
+      <form data-order-track-form>
+        <div class="form-grid">
+          <label>Order number <input name="order_number" required placeholder="LT-ORD-..."></label>
+          <label>Email <input name="email" type="email" required></label>
+        </div>
+        <button class="btn btn-primary" type="submit">Check status</button>
+      </form>
+    </section>
+    <aside class="panel luxury-panel">
+      <div class="eyebrow">Help</div>
+      <div class="details-list">
+        <article><strong>Order updates</strong><p class="muted">Use this page for tracking and delivery stages.</p></article>
+        <article><strong>Order contact</strong><p class="muted"><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></p></article>
+        <article><strong>General support</strong><p class="muted"><a href="/support.html">Open support</a></p></article>
+      </div>
+    </aside>
+  </div>
+  <div class="container section-tight" data-order-track-result></div>
+</main>
+<footer class="footer"><div class="container footer-grid footer-grid-wide"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><div class="footer-contact"><a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/order-status.html">Orders</a></nav></div></footer>
+<script type="module" src="/assets/js/api.js"></script>
+<script type="module" src="/assets/js/order-status.js"></script>
+</body></html>

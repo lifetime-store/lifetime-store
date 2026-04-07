@@ -59,7 +59,7 @@ async function verifyCode(code) {
       </div>
       <div class="details-list" style="margin-top:1rem;">
         <article><strong>Batch</strong><p class="muted">${escapeHtml(item.batch_code)}</p></article>
-        <article><strong>Source</strong><p class="muted">${escapeHtml(item.factory_name || "Lifetime")}</p></article>
+        <article><strong>Factory</strong><p class="muted">${escapeHtml(item.factory_name || "Lifetime production partner")}</p></article>
         <article><strong>Manufactured</strong><p class="muted">${escapeHtml(item.manufactured_at || "Not supplied")}</p></article>
         <article><strong>Scan Count</strong><p class="muted">${item.scan_count || 0}</p></article>
       </div>
@@ -164,9 +164,9 @@ async function startScanner() {
       await startDetectorScanner();
       return;
     }
-    setScannerNote('Live scan is not available in this browser view. Open this page in Safari or Chrome, or upload a label photo.', 'warning');
+    setScannerNote('Live scanning is not supported in this browser view. Open the page directly in Safari or Chrome, or upload a label photo below.', 'warning');
   } catch {
-    setScannerNote('Camera access is unavailable here. Open this page in Safari or Chrome, or upload a label photo.', 'warning');
+    setScannerNote('Camera access is unavailable in this browser view. Try Safari directly or upload a label photo instead.', 'warning');
   }
 }
 

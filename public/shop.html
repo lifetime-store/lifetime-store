@@ -23,6 +23,7 @@
         <a href="/verify.html">Verify</a>
         <a href="/about.html">About</a>
         <a href="/support.html">Support</a>
+        <a href="/order-status.html">Orders</a>
         <a href="/account.html">Account</a>
       </nav>
       <div class="nav-actions">
@@ -41,6 +42,12 @@
         <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Shop Lifetime</h1>
       </div>
       <p class="section-copy">Premium essentials designed for everyday wear, quiet confidence, and long-term value.</p>
+      <div class="shop-toolbar">
+        <label><span class="muted">Search</span><input type="search" data-shop-search placeholder="Search product"></label>
+        <label><span class="muted">Category</span><select data-shop-category><option value="">All</option></select></label>
+        <label><span class="muted">Availability</span><select data-shop-stock><option value="">All</option><option value="in">In stock</option><option value="low">Low stock</option><option value="out">Sold out</option></select></label>
+        <label><span class="muted">Sort</span><select data-shop-sort><option value="featured">Featured</option><option value="newest">Newest</option><option value="price_asc">Price low to high</option><option value="price_desc">Price high to low</option><option value="name_asc">Name A-Z</option></select></label>
+      </div>
       <p class="muted" data-currency-copy></p>
     </div>
     <div class="products-grid" data-shop-products></div>
@@ -55,7 +62,7 @@
       <nav class="footer-links">
         <a href="/shop.html">Shop</a>
         <a href="/verify.html">Verify</a>
-        <a href="/support.html">Support</a>
+        <a href="/support.html">Support</a><a href="/order-status.html">Orders</a>
         <a href="/about.html">About</a>
       </nav>
     </div>
