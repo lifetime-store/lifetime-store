@@ -1,4 +1,5 @@
 import { apiGet, apiPost, escapeHtml } from './api.js';
+import { mountHumanCheck } from './human-check.js';
 
 function postCard(post) {
   const product = post.product_name ? `<div class="muted">${escapeHtml(post.product_name)}${post.product_slug ? ` · <a href="/product.html?slug=${encodeURIComponent(post.product_slug)}">Open product</a>` : ''}</div>` : '<div class="muted">General Lifetime discussion</div>';
@@ -18,13 +19,16 @@ async function loadCommunity() {
   if (picker) picker.innerHTML = `<option value="">General Lifetime discussion</option>${(data.products || []).map((p) => `<option value="${escapeHtml(p.slug)}">${escapeHtml(p.name)}</option>`).join('')}`;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+let communityHuman = { getToken: () => '', reset: () => {} };
+
+document.addEventListener('DOMContentLoaded', async () => {
+  communityHuman = await mountHumanCheck(document.querySelector('[data-community-form]') || document.createElement('form'));
   loadCommunity();
   document.querySelector('[data-community-form]')?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const fd = new FormData(event.currentTarget);
-    const result = await apiPost('/api/community', { product_slug: String(fd.get('product_slug') || ''), title: String(fd.get('title') || ''), body: String(fd.get('body') || '') });
-    if (!result.ok) { notice(`<div class="notice notice-danger">${escapeHtml(result.message || 'Could not post right now.')}</div>`); return; }
+    const result = await apiPost('/api/community', { product_slug: String(fd.get('product_slug') || ''), title: String(fd.get('title') || ''), body: String(fd.get('body') || ''), human_token: communityHuman.getToken() });
+    if (!result.ok) { notice(`<div class="notice notice-danger">${escapeHtml(result.message || 'Could not post right now.')}</div>`); communityHuman.reset?.(); return; }
     notice(`<div class="notice notice-success">${escapeHtml(result.message || 'Posted.')}</div>`);
     event.currentTarget.reset();
     loadCommunity();

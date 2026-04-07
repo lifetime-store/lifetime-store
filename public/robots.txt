@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lifetime-store.shop/sitemap.xml

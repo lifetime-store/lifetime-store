@@ -1,4 +1,5 @@
 import { apiPost, escapeHtml, getStorefrontMeta, loadCustomer, renderStorefrontBanner, updateCartCount } from "./api.js";
+import { mountHumanCheck } from './human-check.js';
 
 function setNotice(target, message, tone = '') {
   if (!target) return;
@@ -6,15 +7,19 @@ function setNotice(target, message, tone = '') {
   target.textContent = message;
 }
 
+let supportHuman = { getToken: () => '', reset: () => {} };
+
 async function handleSupportSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const notice = document.querySelector('[data-support-notice]');
   const payload = Object.fromEntries(new FormData(form).entries());
+  payload.human_token = supportHuman.getToken();
   setNotice(notice, 'Sending your request…');
   const result = await apiPost('/api/support', payload);
   if (!result.ok) {
     setNotice(notice, result.message || 'Support request failed.', 'danger');
+    supportHuman.reset?.();
     return;
   }
   form.reset();
@@ -46,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const meta = await getStorefrontMeta();
   const intro = document.querySelector('[data-support-intro]');
   if (intro && meta.content?.support_intro) intro.textContent = meta.content.support_intro;
+  supportHuman = await mountHumanCheck(document.querySelector('[data-support-form]') || document.createElement('form'));
   document.querySelector('[data-support-form]')?.addEventListener('submit', handleSupportSubmit);
   document.querySelector('[data-ai-support-form]')?.addEventListener('submit', handleAiSubmit);
 });

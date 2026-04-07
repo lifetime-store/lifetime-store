@@ -400,7 +400,7 @@ async function loadSettings() {
   state.settings = res.settings || {};
   const form = document.querySelector('[data-settings-form]');
   if (!form) return;
-  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'];
+  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','hero_trust','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro','faq_intro','newsletter_intro'];
   fields.forEach((key) => { if (form[key]) form[key].value = state.settings[key] || ''; });
 }
 
@@ -951,7 +951,7 @@ function bindForms() {
 document.querySelector('[data-settings-form]')?.addEventListener('submit', async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  const payload = {}; ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'].forEach((key) => { if (form[key]) payload[key] = form[key].value.trim(); });
+  const payload = {}; ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','hero_trust','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro','faq_intro','newsletter_intro'].forEach((key) => { if (form[key]) payload[key] = form[key].value.trim(); });
   const result = await apiPost('/api/admin/settings', payload, true);
   notice('[data-settings-notice]', escapeHtml(result.message || 'Saved.'), result.ok ? 'success' : 'danger');
   if (result.ok) await loadSettings();
@@ -960,7 +960,7 @@ document.querySelector('[data-settings-form]')?.addEventListener('submit', async
 document.querySelector('[data-settings-reset]')?.addEventListener('click', () => {
   const form = document.querySelector('[data-settings-form]');
   if (!form) return;
-  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro'];
+  const fields = ['store_notice_badge','store_notice','verify_scanner_hint','hero_eyebrow','hero_title','hero_copy','hero_cta_label','hero_cta_href','hero_trust','shipping_policy_html','returns_policy_html','exchange_policy_html','size_guide_html','support_intro','orders_intro','faq_intro','newsletter_intro'];
   fields.forEach((key) => { if (form[key]) form[key].value = state.settings[key] || ''; });
 });
 
