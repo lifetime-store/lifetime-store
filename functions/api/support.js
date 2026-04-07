@@ -1,5 +1,6 @@
 import { error, ok, optionsResponse } from "../_lib/response.js";
 import { readJson } from "../_lib/parse.js";
+import { verifyHumanCheck } from '../_lib/human-check.js';
 import { sendIssueAlerts } from "../_lib/mail.js";
 
 export async function onRequestOptions() {
@@ -8,7 +9,9 @@ export async function onRequestOptions() {
 
 export async function onRequestPost(context) {
   const body = await readJson(context.request);
-  const { serial_code = null, issue_type, name, email, message, order_id = null } = body;
+  const { serial_code = null, issue_type, name, email, message, order_id = null, human_token = '' } = body;
+  const human = await verifyHumanCheck(context.env, human_token, context.request.headers.get('cf-connecting-ip') || '');
+  if (!human.ok) return error(human.message, 400);
 
   if (!issue_type || !name || !email || !message) {
     return error("issue_type, name, email, and message are required.", 400);

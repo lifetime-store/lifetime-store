@@ -1,5 +1,6 @@
 import { ok, error, optionsResponse } from '../../_lib/response.js';
 import { readJson } from '../../_lib/parse.js';
+import { verifyHumanCheck } from '../../_lib/human-check.js';
 import { hashPassword, makeExpiryDate, makeSessionToken, sessionCookie } from '../../_lib/customer-auth.js';
 import { ensureCustomerProfile, loyaltyTierFromSpend } from '../../_lib/storefront.js';
 import { requireLoginAvailability, recordLoginFailure, clearLoginFailures } from '../../_lib/login-guard.js';
@@ -15,6 +16,8 @@ export async function onRequest(context) {
   try {
     const body = await readJson(context.request);
     const email = String(body.email || '').trim().toLowerCase();
+    const human = await verifyHumanCheck(context.env, body.human_token, context.request.headers.get('cf-connecting-ip') || '');
+    if (!human.ok) return error(human.message, 400);
     const password = String(body.password || '');
 
     if (!email || !password) return error('Email and password are required.', 400);

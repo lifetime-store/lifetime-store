@@ -1,5 +1,6 @@
 import { ok, error, optionsResponse } from '../../_lib/response.js';
 import { readJson } from '../../_lib/parse.js';
+import { verifyHumanCheck } from '../../_lib/human-check.js';
 import { getCustomerBySession } from '../../_lib/customer-auth.js';
 
 async function productBySlug(env, slug) {
@@ -22,6 +23,8 @@ export async function onRequestPost(context) {
   const product = await productBySlug(context.env, context.params.slug);
   if (!product) return error('Product not found.', 404);
   const body = await readJson(context.request);
+  const human = await verifyHumanCheck(context.env, body.human_token, context.request.headers.get('cf-connecting-ip') || '');
+  if (!human.ok) return error(human.message, 400);
   const rating = Number(body.rating || 0);
   const title = String(body.title || '').trim();
   const review = String(body.body || '').trim();
