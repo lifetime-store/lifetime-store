@@ -14,8 +14,12 @@ export async function onRequestGet(context) {
   const { results } = await context.env.DB.prepare(`
     SELECT
       o.*,
+      d.tracking_number,
+      d.status AS delivery_status,
+      d.courier_name,
       (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) AS item_count
     FROM orders o
+    LEFT JOIN deliveries d ON d.order_id = o.id
     ORDER BY o.created_at DESC
     LIMIT 200
   `).all();

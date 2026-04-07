@@ -9,11 +9,15 @@ export async function onRequestOptions() {
 export async function onRequestPost(context) {
   const body = await readJson(context.request);
   const { username = "", password = "", token = "" } = body;
+  const locked = await requireLoginAvailability(context.env, context.request, 'admin', username || token || 'admin');
+  if (locked) return locked;
 
   if (token) {
     if (token !== context.env.ADMIN_TOKEN) {
+      await recordLoginFailure(context.env, context.request, 'admin', username || token || 'admin');
       return error("Invalid admin token.", 401);
     }
+    await clearLoginFailures(context.env, context.request, 'admin', username || token || 'admin');
     return adminLoginResponse("Studio access granted.", context.env.ADMIN_TOKEN);
   }
 
@@ -22,8 +26,10 @@ export async function onRequestPost(context) {
   }
 
   if (username !== context.env.ADMIN_USERNAME || password !== context.env.ADMIN_PASSWORD) {
+    await recordLoginFailure(context.env, context.request, 'admin', username || 'admin');
     return error("Invalid admin username or password.", 401);
   }
 
+  await clearLoginFailures(context.env, context.request, 'admin', username || 'admin');
   return adminLoginResponse("Studio access granted.", context.env.ADMIN_TOKEN);
 }

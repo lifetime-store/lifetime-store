@@ -32,7 +32,9 @@ export async function listProducts(env, featuredOnly = false) {
         SELECT COUNT(*)
         FROM product_images pi
         WHERE pi.product_id = p.id
-      ) AS image_count
+      ) AS image_count,
+      (SELECT ROUND(AVG(r.rating),1) FROM product_reviews r WHERE r.product_id = p.id AND r.status = 'published') AS average_rating,
+      (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id = p.id AND r.status = 'published') AS review_count
     FROM products p
     LEFT JOIN variants v ON v.product_id = p.id
     WHERE p.active = 1
@@ -62,7 +64,9 @@ export async function getProductBySlug(env, slug) {
         SELECT COUNT(*)
         FROM product_images pi
         WHERE pi.product_id = products.id
-      ) AS image_count
+      ) AS image_count,
+      (SELECT ROUND(AVG(r.rating),1) FROM product_reviews r WHERE r.product_id = products.id AND r.status = 'published') AS average_rating,
+      (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id = products.id AND r.status = 'published') AS review_count
     FROM products
     WHERE slug = ? AND active = 1
     LIMIT 1
@@ -99,6 +103,8 @@ export async function getProductBySlug(env, slug) {
   return {
     ...product,
     image_count: Number(product.image_count || 0),
+    average_rating: Number(product.average_rating || 0),
+    review_count: Number(product.review_count || 0),
     total_stock: totalStock,
     variants,
     images: imagesResult.results || []
@@ -124,7 +130,7 @@ export async function getBatchWithProduct(env, batchId) {
 }
 
 export async function dashboardSummary(env) {
-  const [products, batches, codes, issues, orders, lowStock, pendingActivation, activeBatches, promotions, buyers] = await Promise.all([
+  const [products, batches, codes, issues, orders, lowStock, pendingActivation, activeBatches, promotions, buyers, deliveries, reviews] = await Promise.all([
     env.DB.prepare(`SELECT COUNT(*) AS total FROM products`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM batches`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes`).first(),
@@ -134,7 +140,9 @@ export async function dashboardSummary(env) {
     env.DB.prepare(`SELECT COUNT(*) AS total FROM auth_codes WHERE status IN ('generated','printed','attached','received','draft')`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM batches WHERE status = 'active'`).first(),
     env.DB.prepare(`SELECT COUNT(*) AS total FROM promotions WHERE active = 1`).first(),
-    env.DB.prepare(`SELECT COUNT(*) AS total FROM customers`).first()
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM customers`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM deliveries`).first(),
+    env.DB.prepare(`SELECT COUNT(*) AS total FROM product_reviews WHERE status = 'published'`).first()
   ]);
 
   return {
@@ -147,6 +155,8 @@ export async function dashboardSummary(env) {
     pendingActivation: pendingActivation?.total || 0,
     activeBatches: activeBatches?.total || 0,
     promotions: promotions?.total || 0,
-    buyers: buyers?.total || 0
+    buyers: buyers?.total || 0,
+    deliveries: deliveries?.total || 0,
+    reviews: reviews?.total || 0
   };
 }

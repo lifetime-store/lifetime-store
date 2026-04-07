@@ -18,7 +18,7 @@ export async function onRequest(context) {
     const fullName = String(body.full_name || '').trim();
 
     if (!email || !password) return error('Email and password are required.', 400);
-    if (password.length < 6) return error('Password must be at least 6 characters.', 400);
+    if (password.length < 10 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) return error('Use a stronger password: at least 10 characters with upper, lower, and number.', 400);
 
     const existing = await context.env.DB.prepare(`SELECT id FROM customers WHERE email = ? LIMIT 1`).bind(email).first();
     if (existing) return error('An account with that email already exists.', 409);

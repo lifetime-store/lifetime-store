@@ -16,12 +16,12 @@
     <section class="panel luxury-panel">
       <div class="eyebrow">Orders</div>
       <h1 style="font-size: clamp(2rem, 5vw, 4rem);">Track your order</h1>
-      <p class="muted">Enter your order number and the email used at checkout.</p>
+      <p class="muted">Enter your order number and email, or use your tracking number after payment.</p>
       <div data-order-track-notice></div>
       <form data-order-track-form>
         <div class="form-grid">
-          <label>Order number <input name="order_number" required placeholder="LT-ORD-..."></label>
-          <label>Email <input name="email" type="email" required></label>
+          <label>Order or tracking number <input name="order_number" required placeholder="LT-ORD-... or LT-TRK-..."></label>
+          <label>Email (optional for tracking) <input name="email" type="email"></label>
         </div>
         <button class="btn btn-primary" type="submit">Check status</button>
       </form>

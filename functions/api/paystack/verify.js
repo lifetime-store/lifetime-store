@@ -1,5 +1,6 @@
 import { sendOrderAlerts } from '../../_lib/mail.js';
 import { incrementPromoUsage, refreshCustomerProfile } from '../../_lib/storefront.js';
+import { ensureDeliveryForOrder, addDeliveryUpdate } from '../../_lib/delivery.js';
 
 async function loadOrderItems(env, orderId) {
   const { results } = await env.DB.prepare(`
@@ -52,6 +53,19 @@ export async function onRequestGet(context) {
   }
 
   const tx = verifyData.data;
+  if (tx.metadata?.payment_mode === 'delivery_fee') {
+    const feeCode = tx.metadata?.fee_code || '';
+    const fee = feeCode ? await env.DB.prepare(`SELECT * FROM delivery_fee_requests WHERE fee_code = ? LIMIT 1`).bind(feeCode).first() : null;
+    if (!fee) return Response.redirect(`${url.origin}/order-status.html?paid=0&reason=delivery_fee_not_found`, 302);
+    if (tx.status === 'success') {
+      await env.DB.prepare(`UPDATE delivery_fee_requests SET status = 'paid', paystack_reference = ?, paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(reference, fee.id).run();
+      const delivery = await env.DB.prepare(`SELECT * FROM deliveries WHERE id = ? LIMIT 1`).bind(fee.delivery_id).first();
+      if (delivery) await addDeliveryUpdate(env, delivery.id, fee.order_id, 'delivery_fee_paid', `Delivery fee paid. ${fee.reason}`, delivery.destination_city || delivery.destination_country || 'Logistics');
+      const orderRow = await env.DB.prepare(`SELECT order_number, email FROM orders WHERE id = ? LIMIT 1`).bind(fee.order_id).first();
+      return Response.redirect(`${url.origin}/order-status.html?order=${encodeURIComponent(orderRow?.order_number || '')}&email=${encodeURIComponent(orderRow?.email || '')}&delivery_fee=paid`, 302);
+    }
+    return Response.redirect(`${url.origin}/order-status.html?delivery_fee=failed`, 302);
+  }
   orderNumber = orderNumber || tx.metadata?.order_number || '';
   if (!orderNumber) {
     return Response.redirect(`${url.origin}/checkout.html?paid=0&reason=missing_order`, 302);
@@ -85,6 +99,7 @@ export async function onRequestGet(context) {
     await decrementStockForOrder(env, order.id);
     if (order.promo_code) await incrementPromoUsage(env, order.promo_code);
     if (order.customer_id) await refreshCustomerProfile(env, order.customer_id);
+    await ensureDeliveryForOrder(env, order);
     await notifyPaidIfNeeded(env, order);
 
     return Response.redirect(`${url.origin}/checkout.html?paid=1&order=${encodeURIComponent(orderNumber)}`, 302);
