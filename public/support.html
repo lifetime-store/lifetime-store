@@ -21,7 +21,7 @@
     <section class="panel luxury-panel">
       <div class="eyebrow">Support</div>
       <h1 style="font-size: clamp(2rem, 5vw, 4rem);">How can we help?</h1>
-      <p class="lead">Use this form for product questions, authenticity concerns, quality issues, or general help.</p>
+      <p class="lead" data-support-intro>Use this form for product questions, authenticity concerns, quality issues, or general help.</p>
       <div class="support-direct-line">General support: <a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a> · Order help: <a href="/order-status.html">Track order</a></div>
       <div data-support-notice></div>
       <form data-support-form>
@@ -42,6 +42,19 @@
         <label>Message <textarea name="message" required placeholder="Tell us what happened"></textarea></label>
         <button class="btn btn-primary" type="submit">Send request</button>
       </form>
+      <div class="panel luxury-panel" style="margin-top:1rem;">
+        <div class="eyebrow">Lifetime AI</div>
+        <p class="muted">Ask quick questions about orders, delivery, authenticity, returns, exchanges, size guidance, and payment steps.</p>
+        <div data-ai-support-notice></div>
+        <form data-ai-support-form class="stack">
+          <label>Ask Lifetime AI
+            <textarea name="question" required placeholder="Example: How do I pay a delivery fee after my main order is paid?"></textarea>
+          </label>
+          <button class="btn btn-soft" type="submit">Ask AI</button>
+        </form>
+        <div class="section-tight" data-ai-support-answer></div>
+      </div>
+
     </section>
     <aside class="panel luxury-panel">
       <div class="eyebrow">Support standards</div>
@@ -56,6 +69,6 @@
 </main>
 <footer class="footer"><div class="container footer-grid footer-grid-wide"><div class="footer-brand"><strong>LIFETIME</strong><small>Quiet quality. Everyday wear. Verified originals.</small></div><div class="footer-contact"><a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a><a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a></div><nav class="footer-links"><a href="/shop.html">Shop</a><a href="/verify.html">Verify</a><a href="/support.html">Support</a><a href="/about.html">About</a><a href="/shipping.html">Shipping</a><a href="/size-guide.html">Size guide</a></nav></div></footer>
 <script type="module" src="/assets/js/api.js"></script>
-<script type="module" src="/assets/js/verify.js"></script>
+<script type="module" src="/assets/js/support.js"></script>
 </body>
 </html>

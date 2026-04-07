@@ -71,3 +71,17 @@ No new D1 migration is required for this upgrade because it uses the existing `s
 ## Advanced storefront upgrade
 Run `migrations/0007_advanced_storefront_upgrade.sql` to enable wishlist, restock requests, order tracking history, and editable policy content.
 This package also adds order tracking, policy pages, search/filter/sort, support/orders split, wishlist, restock requests, and an admin audit view.
+
+
+## Cloudflare AI support assistant
+
+This package can use Cloudflare Workers AI for the support assistant on `/support.html`.
+
+### Cloudflare setup
+- Go to **Workers & Pages** > your Pages project > **Settings** > **Bindings** > **Add** > **Workers AI**
+- Set the variable name to `AI`
+- Optional variable: `AI_ASSISTANT_MODEL`
+
+### Mail routing
+- `SUPPORT_EMAIL` receives support-form alerts
+- `ORDERS_EMAIL` receives order and delivery alerts
