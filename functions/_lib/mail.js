@@ -57,7 +57,7 @@ async function sendEmail(env, { to, subject, html, replyTo }) {
 
 export async function sendOrderAlerts(env, order, items = [], eventLabel = 'Order received') {
   const brand = env.BRAND_NAME || 'Lifetime';
-  const alertTo = env.ALERT_TO_EMAIL || env.BRAND_EMAIL;
+  const alertTo = env.ORDERS_EMAIL || env.ALERT_TO_EMAIL || env.BRAND_EMAIL;
   const itemList = renderItems(items);
   const total = formatMoney(order.total, order.currency || 'NGN');
   const customerEmail = escapeHtml(order.email || '');
@@ -85,7 +85,7 @@ export async function sendOrderAlerts(env, order, items = [], eventLabel = 'Orde
       <p><strong>Total:</strong> ${escapeHtml(total)}</p>
       <h3>Items</h3>
       <ul>${itemList}</ul>
-      <p>If you need help, reply to this email or contact ${escapeHtml(env.BRAND_EMAIL || alertTo || '')}.</p>
+      <p>If you need delivery or order help, reply to this email or contact ${escapeHtml(env.ORDERS_EMAIL || env.BRAND_EMAIL || alertTo || '')}.</p>
     </div>
   `;
 
@@ -103,7 +103,7 @@ export async function sendOrderAlerts(env, order, items = [], eventLabel = 'Orde
       to: order.email,
       subject: `${brand} order update — ${order.order_number}`,
       html: customerHtml,
-      replyTo: env.BRAND_EMAIL || alertTo || undefined
+      replyTo: env.ORDERS_EMAIL || env.BRAND_EMAIL || alertTo || undefined
     }));
   }
   await Promise.all(promises);
@@ -132,7 +132,7 @@ export async function sendIssueAlerts(env, issue) {
       <p>We have received your message and a member of the ${escapeHtml(brand)} team will review it as quickly as possible.</p>
       <p><strong>Issue type:</strong> ${escapeHtml(issue.issue_type || '')}</p>
       <p><strong>Reference code:</strong> ${escapeHtml(issue.serial_code || 'Not provided')}</p>
-      <p>If you need to reply, use this email thread or contact ${escapeHtml(env.BRAND_EMAIL || alertTo || '')}.</p>
+      <p>If you need to reply, use this email thread or contact ${escapeHtml(env.SUPPORT_EMAIL || env.BRAND_EMAIL || alertTo || '')}.</p>
     </div>
   `;
 
