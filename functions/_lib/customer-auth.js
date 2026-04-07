@@ -58,6 +58,10 @@ export async function getCustomerBySession(env, request) {
   return row;
 }
 
+export async function getCustomerFromRequest(request, env) {
+  return getCustomerBySession(env, request);
+}
+
 export async function requireCustomer(context) {
   const customer = await getCustomerBySession(context.env, context.request);
   if (!customer) return { response: error('Unauthorized.', 401), customer: null };
