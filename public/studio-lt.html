@@ -10,25 +10,29 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="container nav">
-      <a href="/" class="brand">
-        <span class="brand-mark">LT</span>
-        <span class="brand-copy">
-          LIFETIME
-          <small>Quiet premium essentials</small>
-        </span>
-      </a>
-      <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/account.html">Account</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
-      </div>
+  <div class="container nav">
+    <a href="/" class="brand">
+      <span class="brand-mark">LT</span>
+      <span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="site-nav">
+      <a href="/shop.html">Shop</a>
+      <a href="/about.html">About</a>
+      <a href="/verify.html">Verify</a>
+      <a href="/policies.html">Policies</a>
+      <a href="/order-status.html">Track Order</a>
+      <a href="/support.html">Support</a>
+      <a href="/community.html">Community</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="badge" href="/account.html" data-account-link>Account</a>
+      <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
     </div>
-  </header>
+  </div>
+</header>
 
   <main class="section">
     <div class="container">
@@ -188,7 +192,6 @@
               <form data-settings-form>
                 <div class="form-grid">
                   <label>Banner badge <input name="store_notice_badge" placeholder="Launch offer"></label>
-                  <label>Hero trust line <input name="hero_trust" placeholder="Secure checkout · Verified originals · Live delivery tracking"></label>
                   <label>Verify scanner hint <input name="verify_scanner_hint" placeholder="Use your phone camera on the cloth label."></label>
                   <label>Hero eyebrow <input name="hero_eyebrow" placeholder="Quiet premium essentials"></label>
                   <label>Hero title <input name="hero_title" placeholder="Refined essentials built to outlast noise."></label>
@@ -200,8 +203,6 @@
                 <div class="form-grid">
                   <label>Support intro <textarea name="support_intro" placeholder="Support section intro"></textarea></label>
                   <label>Orders intro <textarea name="orders_intro" placeholder="Orders section intro"></textarea></label>
-                  <label>FAQ intro <textarea name="faq_intro" placeholder="FAQ page intro"></textarea></label>
-                  <label>Newsletter intro <textarea name="newsletter_intro" placeholder="Newsletter section intro"></textarea></label>
                 </div>
                 <label>Shipping policy HTML <textarea name="shipping_policy_html" rows="5"></textarea></label>
                 <label>Returns policy HTML <textarea name="returns_policy_html" rows="5"></textarea></label>
@@ -279,9 +280,7 @@
                   <label>Email <input name="email" type="email" placeholder="ops@lifetime-store.shop"></label>
                   <label>Role
                     <select name="role">
-                      <option value="owner">Owner</option>
                       <option value="operations">Operations</option>
-                      <option value="delivery">Delivery</option>
                       <option value="inventory">Inventory</option>
                       <option value="support">Support</option>
                       <option value="marketing">Marketing</option>
@@ -390,68 +389,6 @@
               <div data-admin-discussions class="stack"></div>
             </article>
 
-            <article class="panel">
-              <div class="eyebrow">Operations reports and alerts</div>
-              <div data-admin-reports class="stack"></div>
-              <div class="divider"></div>
-              <div class="eyebrow">Customer tier breakdown</div>
-              <div data-admin-tier-breakdown class="stack"></div>
-              <div class="divider"></div>
-              <div class="eyebrow">Notification center</div>
-              <div data-admin-notifications class="stack"></div>
-            </article>
-
-            <article class="panel">
-              <div class="eyebrow">FAQ manager</div>
-              <div data-faq-notice></div>
-              <form data-faq-form class="stack-tight">
-                <input type="hidden" name="faq_id">
-                <div class="form-grid">
-                  <label>Category <input name="category" value="general"></label>
-                  <label>Sort order <input name="sort_order" type="number" value="0"></label>
-                  <label>Status
-                    <select name="status"><option value="published">published</option><option value="draft">draft</option></select>
-                  </label>
-                </div>
-                <label>Question <input name="question" required></label>
-                <label>Answer HTML <textarea name="answer_html" required placeholder="<p>Answer...</p>"></textarea></label>
-                <button class="btn btn-primary" type="submit">Save FAQ item</button>
-              </form>
-              <div class="divider"></div>
-              <div data-admin-faq class="stack"></div>
-            </article>
-
-            <article class="panel">
-              <div class="eyebrow">Launch drops and lookbook</div>
-              <div data-drops-notice></div>
-              <form data-drop-form class="stack-tight">
-                <input type="hidden" name="drop_id">
-                <div class="form-grid">
-                  <label>Title <input name="title" required></label>
-                  <label>Slug <input name="slug" required></label>
-                  <label>Launch at <input name="launch_at" type="datetime-local"></label>
-                  <label>Status
-                    <select name="status"><option value="scheduled">scheduled</option><option value="live">live</option><option value="published">published</option><option value="archived">archived</option></select>
-                  </label>
-                </div>
-                <label>Badge text <input name="badge_text" placeholder="Now live"></label>
-                <label>CTA href <input name="cta_href" value="/shop.html"></label>
-                <label>Summary <textarea name="summary" placeholder="Short campaign summary"></textarea></label>
-                <label>Body HTML <textarea name="body_html" placeholder="<p>Campaign details...</p>"></textarea></label>
-                <button class="btn btn-primary" type="submit">Save drop</button>
-              </form>
-              <div class="divider"></div>
-              <div data-admin-drops class="stack"></div>
-            </article>
-
-            <article class="panel">
-              <div class="eyebrow">Exports and suspicious verify scans</div>
-              <div data-admin-exports class="inline-actions wrap"></div>
-              <div class="divider"></div>
-              <div data-admin-verify-flags class="stack"></div>
-            </article>
-
-
           </div>
         </div>
       </section>
@@ -460,6 +397,6 @@
 
   <script type="module" src="/assets/js/admin.js"></script>
   <script type="module" src="/assets/js/admin-plus.js"></script>
-  <script type="module" src="/assets/js/admin-ops.js"></script>
+  <script type="module" src="/assets/js/chrome.js"></script>
 </body>
 </html>

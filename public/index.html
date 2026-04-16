@@ -9,34 +9,29 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="container nav">
-      <a href="/" class="brand">
-        <span class="brand-mark">LT</span>
-        <span class="brand-copy">
-          LIFETIME
-          <small>Quiet premium essentials</small>
-        </span>
-      </a>
-      <nav class="nav-links">
-        <a href="/">Home</a>
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/faq.html">FAQ</a>
-        <a href="/lookbook.html">Lookbook</a>
-        <a href="/drops.html">Drops</a>
-        <a href="/about.html">About</a>
-        <a href="/community.html">Community</a>
-        <a href="/policies.html">Policies</a>
-        <a href="/support.html">Support</a>
-        <a href="/order-status.html">Orders</a>
-        <a href="/account.html">Account</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="badge" href="/account.html" data-account-link>Account</a>
-        <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
-      </div>
+  <div class="container nav">
+    <a href="/" class="brand">
+      <span class="brand-mark">LT</span>
+      <span class="brand-copy">LIFETIME<small>Quiet premium essentials</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="site-nav">
+      <a href="/shop.html">Shop</a>
+      <a href="/about.html">About</a>
+      <a href="/verify.html">Verify</a>
+      <a href="/policies.html">Policies</a>
+      <a href="/order-status.html">Track Order</a>
+      <a href="/support.html">Support</a>
+      <a href="/community.html">Community</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="badge" href="/account.html" data-account-link>Account</a>
+      <a class="badge" href="/cart.html">Cart <span data-cart-count>0</span></a>
     </div>
-  </header>
+  </div>
+</header>
 <div class="storefront-banner hide" data-storefront-banner></div>
 
 <main>
@@ -54,7 +49,6 @@
           <span class="pill">Luxury everyday basics</span>
           <span class="pill">Verified originals</span>
           <span class="pill">Order tracking</span>
-          <span class="pill" data-hero-trust>Secure checkout · Verified originals · Live delivery tracking</span>
         </div>
         <p class="muted" data-region-copy></p>
       </article>
@@ -65,7 +59,7 @@
           <div class="stat-label">Core silhouettes shaped for clean repeat wear, premium comfort, and long-term brand growth.</div>
         </article>
         <article class="hero-card hero-verify">
-          <h3>Support and orders</h3><p class="muted">General product help is separate from order tracking.</p><div class="hero-actions"><a class="btn btn-primary" href="/support.html">Support</a><a class="btn btn-soft" href="/order-status.html">Track order</a></div>
+          <h3>Support, tracking, and trust</h3><p class="muted">General support stays separate from order tracking, verification, and policy access.</p><div class="hero-actions"><a class="btn btn-primary" href="/support.html">Support</a><a class="btn btn-soft" href="/order-status.html">Track order</a></div><p class="muted legal-lead">Operated by FVA70K SERVICES under the Lifetime brand.</p>
         </article>
       </aside>
     </div>
@@ -103,38 +97,35 @@
       </article>
     </div>
   </section>
-  <section class="section"><div class="container grid-2"><article class="panel luxury-panel"><div class="eyebrow">Customer documents</div><h2>Policies customers can read before they buy</h2><p class="lead">Terms, privacy, billing, delivery, authenticity, and community rules are now live on the website for every visitor.</p><div class="sticky-actions"><a class="btn btn-primary" href="/policies.html">Open policy hub</a><a class="btn btn-soft" href="/delivery-terms.html">Delivery terms</a></div></article><article class="panel luxury-panel"><div class="eyebrow">Customer community</div><h2>Visible discussion, reviews, and fit talk</h2><p class="lead">Customers can review products on each product page and also join a clean sitewide community channel.</p><div class="sticky-actions"><a class="btn btn-primary" href="/community.html">Open community</a><a class="btn btn-soft" href="/product.html?slug=core-tee">See product reviews</a></div></article></div></section>
-  <section class="section"><div class="container trust-strip"><article class="feature-card"><strong>Secure checkout</strong><p class="muted">Paystack-powered payments with delivery tracking and order confirmation flow.</p></article><article class="feature-card"><strong>Policy transparency</strong><p class="muted">Terms, privacy, billing, delivery, authenticity, and support policies are available on-site.</p></article><article class="feature-card"><strong>Community and reviews</strong><p class="muted">Customers can review products, ask fit questions, and interact through the Lifetime community.</p></article></div></section>
-
-  <section class="section"><div class="container split-grid"><article class="panel luxury-panel"><div class="eyebrow">FAQ</div><h2>Answers customers can find fast.</h2><p class="lead">Shipping, delivery fees, tracking, authenticity, returns, exchanges, and support all have a clearer customer path now.</p><div class="hero-actions"><a class="btn btn-primary" href="/faq.html">Open FAQ</a><a class="btn btn-soft" href="/support.html">Support</a></div></article><article class="panel luxury-panel"><div class="eyebrow">Launches</div><h2>Lookbook and drops live in one flow.</h2><p class="lead">Highlight campaign direction, release timing, and collection storytelling without forcing customers to guess what is live now.</p><div class="hero-actions"><a class="btn btn-primary" href="/lookbook.html">Open lookbook</a><a class="btn btn-soft" href="/drops.html">View drops</a></div></article></div></section>
-
-  <section class="section"><div class="container split-grid"><article class="panel luxury-panel"><div class="eyebrow">Newsletter</div><h2>Launch, restock, and delivery updates</h2><p class="lead" data-newsletter-copy>Join launch, restock, and delivery update mail.</p><form data-newsletter-mini-form class="stack-tight"><label>Email <input type="email" name="email" required placeholder="you@example.com"></label><button class="btn btn-primary" type="submit">Join updates</button></form><div data-newsletter-mini-notice></div></article><article class="panel luxury-panel"><div class="eyebrow">Operations</div><h2>Tracking, support, and verified originals</h2><div class="details-list"><article><strong>Orders</strong><p class="muted"><a href="/order-status.html">Track order</a> with order number + email or tracking number.</p></article><article><strong>Verify</strong><p class="muted"><a href="/verify.html">Verify a label</a> using scan, upload, or manual entry.</p></article><article><strong>Policies</strong><p class="muted"><a href="/policies.html">Policy hub</a> keeps customer trust pages visible and easy to find.</p></article></div></article></div></section>
-</main>
+  <section class="section"><div class="container grid-2"><article class="panel luxury-panel"><div class="eyebrow">Customer documents</div><h2>Policies customers can read before they buy</h2><p class="lead">Terms, privacy, billing, delivery, authenticity, and community rules are now live on the website for every visitor.</p><div class="sticky-actions"><a class="btn btn-primary" href="/policies.html">Open policy hub</a><a class="btn btn-soft" href="/delivery-terms.html">Delivery terms</a></div></article><article class="panel luxury-panel"><div class="eyebrow">Customer community</div><h2>Visible discussion, reviews, and fit talk</h2><p class="lead">Customers can review products on each product page and also join a clean sitewide community channel.</p><div class="sticky-actions"><a class="btn btn-primary" href="/community.html">Open community</a><a class="btn btn-soft" href="/product.html?slug=core-tee">See product reviews</a></div></article></div></section><section class="section"><div class="container grid-3 trust-grid"><article class="feature-card"><div class="eyebrow">Trust-led operations</div><h3>Policies customers can actually read</h3><p class="muted">Terms, privacy, billing, delivery, authenticity, support, and community rules are visible to every visitor.</p></article><article class="feature-card"><div class="eyebrow">Customer assurance</div><h3>Verify, track, and confirm</h3><p class="muted">Customers can verify labels, track orders, and confirm delivery details inside the website workflow.</p></article><article class="feature-card"><div class="eyebrow">Quiet premium brand</div><h3>Structure before noise</h3><p class="muted">Lifetime keeps the browsing experience controlled, uncluttered, and confidence-led.</p></article></div></section></main>
 
   <footer class="footer">
-    <div class="container footer-grid footer-grid-wide">
-      <div class="footer-brand">
-        <strong>LIFETIME</strong>
-        <small>Quiet quality. Everyday wear. Verified originals.</small>
-      </div>
-      <div class="footer-contact">
-        <a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a>
-        <a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a>
-      </div>
-      <nav class="footer-links">
-        <a href="/shop.html">Shop</a>
-        <a href="/verify.html">Verify</a>
-        <a href="/faq.html">FAQ</a>
-        <a href="/lookbook.html">Lookbook</a>
-        <a href="/drops.html">Drops</a>
-        <a href="/community.html">Community</a><a href="/policies.html">Policies</a><a href="/support.html">Support</a><a href="/order-status.html">Orders</a>
-        <a href="/about.html">About</a>
-      </nav>
+  <div class="container footer-grid footer-grid-wide">
+    <div class="footer-brand">
+      <strong>LIFETIME</strong>
+      <small>Quiet Premium Essentials</small>
+      <p class="footer-legal">Operated by FVA70K SERVICES<br>Business Name Registration No. 7813786</p>
     </div>
-  </footer>
+    <div class="footer-contact">
+      <a href="mailto:support@lifetime-store.shop">support@lifetime-store.shop</a>
+      <a href="mailto:orders@lifetime-store.shop">orders@lifetime-store.shop</a>
+      <span class="footer-trust">Secure checkout powered by Paystack • Verified originals • Live tracking</span>
+    </div>
+    <nav class="footer-links">
+      <a href="/shop.html">Shop</a>
+      <a href="/about.html">About</a>
+      <a href="/verify.html">Verify</a>
+      <a href="/order-status.html">Track Order</a>
+      <a href="/policies.html">Policies</a>
+      <a href="/support.html">Support</a>
+      <a href="/community.html">Community</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</footer>
 
   <script type="module" src="/assets/js/api.js"></script>
   <script type="module" src="/assets/js/site.js"></script>
-  <script type="module" src="/assets/js/faq.js"></script>
+  <script type="module" src="/assets/js/chrome.js"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
-import { apiGet, apiPost, clearCart, loadCustomer, saveCart, setCustomer, syncCartFromServer, qs, escapeHtml, formatNGN } from './api.js';
-import { mountHumanCheck } from './human-check.js';
+import { apiGet, apiPost, clearCart, loadCustomer, saveCart, setCustomer, syncCartFromServer, qs } from './api.js';
 
 function setNotice(html) {
   const el = document.querySelector('[data-auth-notice]');
@@ -16,9 +15,6 @@ function setButtonState(button, busy, busyText, idleText) {
   button.textContent = busy ? busyText : idleText;
 }
 
-let registerHuman = { getToken: () => '', reset: () => {} };
-let loginHuman = { getToken: () => '', reset: () => {} };
-
 async function handleRegister(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -29,8 +25,7 @@ async function handleRegister(event) {
   const payload = {
     full_name: getFormValue(form, 'full_name'),
     email: getFormValue(form, 'email').toLowerCase(),
-    password: getFormValue(form, 'password'),
-    human_token: registerHuman.getToken()
+    password: getFormValue(form, 'password')
   };
 
   if (!payload.email || !payload.password) {
@@ -52,7 +47,6 @@ async function handleRegister(event) {
   } catch (error) {
     setNotice(`<div class="notice notice-danger">Could not create account right now. Please try again.</div>`);
   }
-  registerHuman.reset?.();
   setButtonState(button, false, 'Creating account...', 'Create account');
 }
 
@@ -66,8 +60,7 @@ async function handleLogin(event) {
   try {
     const result = await apiPost('/api/auth/login', {
       email: getFormValue(form, 'email').toLowerCase(),
-      password: getFormValue(form, 'password'),
-      human_token: loginHuman.getToken()
+      password: getFormValue(form, 'password')
     });
     if (result.ok && result.customer) {
       setCustomer(result.customer);
@@ -80,13 +73,7 @@ async function handleLogin(event) {
   } catch (error) {
     setNotice(`<div class="notice notice-danger">Sign in failed. Please try again.</div>`);
   }
-  loginHuman.reset?.();
   setButtonState(button, false, 'Signing in...', 'Sign in');
-}
-
-function renderOrderHistory(orders = []) {
-  if (!orders.length) return '<article><strong>Order history</strong><p class="muted">No orders linked to this account yet.</p></article>';
-  return `<article><strong>Order history</strong><div class="stack">${orders.slice(0,8).map((order) => `<div class="simple-row simple-row-spaced"><div><strong>${escapeHtml(order.order_number || '')}</strong><div class="muted">${escapeHtml(order.status || '')}${order.delivery_status ? ` · ${escapeHtml(order.delivery_status)}` : ''}</div><div class="muted">${escapeHtml(order.tracking_number || '')}</div></div><div class="muted">${formatNGN(order.total || 0)}</div></div>`).join('')}</div><div class="inline-actions" style="margin-top:.75rem;"><a class="btn btn-soft" href="/order-status.html">Track order</a></div></article>`;
 }
 
 async function handleLogout() {
@@ -122,7 +109,7 @@ async function renderAccount() {
     return;
   }
 
-  const [cartResult, wishlistResult, ordersResult] = await Promise.all([apiGet('/api/cart'), apiGet('/api/wishlist'), apiGet('/api/account/orders')]);
+  const [cartResult, wishlistResult, ordersResult] = await Promise.all([apiGet('/api/cart'), apiGet('/api/wishlist'), apiGet(`/api/admin/customers?customer_id=${customer.id}`)]);
   const itemCount = Array.isArray(cartResult.items) ? cartResult.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0) : 0;
   const wishlistCount = Array.isArray(wishlistResult.items) ? wishlistResult.items.length : 0;
   const orderCount = Number(customer.paid_orders || 0);
@@ -150,7 +137,7 @@ async function renderAccount() {
       <article><strong>Email</strong><p class="muted">${customer.email}</p></article>
       <article><strong>Successful orders</strong><p class="muted">${Number(customer.paid_orders || 0)} completed paid order(s)</p></article>
       <article><strong>Loyalty points</strong><p class="muted">${Number(customer.loyalty_points || 0)} point(s)</p></article>
-      <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article><article><strong>Wishlist</strong><p class="muted">${wishlistCount} saved item${wishlistCount === 1 ? '' : 's'}.</p></article><article><strong>Track orders</strong><p class="muted">${orderCount} successful order${orderCount === 1 ? '' : 's'} counted toward your rank. <a href="/order-status.html">Track order</a></p></article>${renderOrderHistory(ordersResult.orders || [])}
+      <article><strong>Saved cart items</strong><p class="muted">${itemCount} item${itemCount === 1 ? '' : 's'} linked to your account.</p></article><article><strong>Wishlist</strong><p class="muted">${wishlistCount} saved item${wishlistCount === 1 ? '' : 's'}.</p></article><article><strong>Track orders</strong><p class="muted">${orderCount} successful order${orderCount === 1 ? '' : 's'} counted toward your rank. <a href="/order-status.html">Track order</a></p></article>
     </div>
     <div class="inline-actions">
       <a class="btn btn-primary" href="/shop.html">Continue shopping</a>

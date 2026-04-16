@@ -1,0 +1,1 @@
+No new D1 migration is required for this rebuild. Upload the package, redeploy Cloudflare Pages, hard refresh, and test the visible navigation, About, Policies, Support, Contact, Community, Verify, and Track Order pages. This rebuild updates public legal/operator wording to FVA70K SERVICES and improves visible navigation and footer trust layers.

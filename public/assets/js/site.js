@@ -1,5 +1,4 @@
 import { apiGet, escapeHtml, getStorefrontMeta, localizePriceFromUSD } from './api.js';
-import { mountHumanCheck } from './human-check.js';
 
 function productImage(product) {
   if (product.primary_image_url) return `<img src="${product.primary_image_url}" alt="${escapeHtml(product.name)}">`;
@@ -24,28 +23,6 @@ async function productPriceMarkup(product) {
   `;
 }
 
-let newsletterHuman = { getToken: () => '', reset: () => {} };
-
-async function bindNewsletterMini(meta) {
-  const form = document.querySelector('[data-newsletter-mini-form]');
-  newsletterHuman = await mountHumanCheck(form || document.createElement('form'));
-  const notice = document.querySelector('[data-newsletter-mini-notice]');
-  const copy = document.querySelector('[data-newsletter-copy]');
-  if (copy && meta.content?.newsletter_intro) copy.textContent = meta.content.newsletter_intro;
-  if (!form) return;
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const email = String(new FormData(form).get('email') || '').trim();
-    const result = await apiGet('/api/meta/storefront');
-    const payload = { email, human_token: newsletterHuman.getToken() };
-    const response = await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(payload) });
-    const data = await response.json().catch(() => ({ ok: false, message: 'Could not save your subscription.' }));
-    if (!data.ok) { if (notice) notice.innerHTML = `<div class="notice notice-danger">${escapeHtml(data.message || 'Could not save your subscription.')}</div>`; newsletterHuman.reset?.(); return; }
-    form.reset();
-    if (notice) notice.innerHTML = `<div class="notice notice-success">${escapeHtml(data.message || 'Subscription saved.')}</div>`;
-  }, { once: false });
-}
-
 function setHeroFromMeta(meta) {
   document.querySelectorAll('[data-hero-eyebrow]').forEach((el) => el.textContent = meta.hero_eyebrow || 'Quiet premium essentials');
   document.querySelectorAll('[data-hero-title]').forEach((el) => el.textContent = meta.hero_title || 'Refined essentials built to outlast noise.');
@@ -64,12 +41,8 @@ async function loadFeaturedProducts() {
   const products = data.products || [];
 
   setHeroFromMeta(meta);
-  const heroTrust = document.querySelector('[data-hero-trust]');
-  if (heroTrust && meta.content?.hero_trust) heroTrust.textContent = meta.content.hero_trust;
   const spotlight = document.querySelector('[data-region-copy]');
   if (spotlight) { spotlight.textContent = meta.currency === 'NGN' ? '' : `Preview shown in ${meta.currency} for ${meta.country}. Final payment remains in NGN.`; }
-
-  await bindNewsletterMini(meta);
 
   if (!products.length) {
     mount.innerHTML = `<div class="empty-state">No products are live yet. Your first drop will appear here.</div>`;

@@ -80,12 +80,7 @@ export async function getStorefrontMeta(force = false) {
       returns_policy_html: '',
       exchange_policy_html: '',
       size_guide_html: '',
-      collection_intro: '',
-      faq_intro: '',
-      hero_trust: '',
-      footer_note: '',
-      newsletter_intro: '',
-      turnstileSiteKey: ''
+      collection_intro: ''
     });
   }
   return storefrontMetaPromise;
