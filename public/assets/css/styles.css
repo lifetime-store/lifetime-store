@@ -93,3 +93,94 @@
   }
 }
 /* === MOBILE NAV HOTFIX END === */
+/* === MOBILE NAV HOTFIX START === */
+@media (max-width: 768px) {
+  .site-header,
+  .brand-header,
+  .chrome-header,
+  .topbar,
+  header.site-chrome {
+    overflow: visible !important;
+  }
+
+  .chrome-mobile-actions,
+  .mobile-actions,
+  .header-actions {
+    position: static !important;
+    width: 100% !important;
+    display: flex !important;
+    gap: 12px !important;
+    margin: 14px 0 0 !important;
+    padding: 0 !important;
+    justify-content: stretch !important;
+  }
+
+  .chrome-mobile-actions > *,
+  .mobile-actions > *,
+  .header-actions > * {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+
+  .mobile-nav-drawer,
+  .chrome-mobile-drawer,
+  .nav-drawer,
+  .mobile-menu-panel {
+    position: fixed !important;
+    inset: 110px 16px 16px 16px !important;
+    max-height: calc(100dvh - 126px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    padding: 16px !important;
+    border-radius: 28px !important;
+    background: rgba(8, 8, 10, 0.98) !important;
+    z-index: 9999 !important;
+  }
+
+  .mobile-nav-drawer a,
+  .chrome-mobile-drawer a,
+  .nav-drawer a,
+  .mobile-menu-panel a,
+  .mobile-nav-drawer button,
+  .chrome-mobile-drawer button,
+  .nav-drawer button,
+  .mobile-menu-panel button {
+    display: block !important;
+    width: 100% !important;
+    text-align: left !important;
+    font-size: 18px !important;
+    line-height: 1.25 !important;
+    font-weight: 500 !important;
+    padding: 18px 14px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  .mobile-nav-drawer .account-pill,
+  .mobile-nav-drawer .cart-pill,
+  .chrome-mobile-drawer .account-pill,
+  .chrome-mobile-drawer .cart-pill,
+  .nav-drawer .account-pill,
+  .nav-drawer .cart-pill,
+  .mobile-menu-panel .account-pill,
+  .mobile-menu-panel .cart-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: calc(50% - 6px) !important;
+    min-height: 56px !important;
+    font-size: 17px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(255,255,255,0.10) !important;
+    margin: 0 0 12px !important;
+  }
+
+  .drawer-top-actions,
+  .mobile-drawer-top,
+  .nav-drawer-top {
+    display: flex !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+}
+/* === MOBILE NAV HOTFIX END === */
