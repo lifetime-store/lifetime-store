@@ -12,43 +12,28 @@ function markCurrentLinks() {
 function setupMobileNav() {
   const nav = document.querySelector('.nav');
   const toggle = document.querySelector('.nav-toggle');
-  const links = document.querySelector('.nav-links');
-  const actions = document.querySelector('.nav-actions');
-  if (!nav || !toggle || !links) return;
+  if (!nav || !toggle) return;
 
-  const syncDrawerLayout = () => {
-    if (window.innerWidth > 900) {
-      links.style.removeProperty('--drawer-top');
-      links.style.removeProperty('--drawer-height');
-      if (actions) actions.style.removeProperty('--drawer-actions-top');
-      return;
-    }
-
-    const viewport = window.visualViewport;
-    const viewportHeight = viewport ? viewport.height : window.innerHeight;
-    const headerRect = nav.getBoundingClientRect();
-    const topBase = Math.max(headerRect.bottom + 12, 104);
-    const actionsHeight = actions ? Math.max(actions.offsetHeight, 56) : 0;
-    const linksTop = topBase + actionsHeight + 14;
-    const drawerHeight = Math.max(260, viewportHeight - linksTop - 18);
-
-    if (actions) actions.style.setProperty('--drawer-actions-top', `${topBase}px`);
-    links.style.setProperty('--drawer-top', `${linksTop}px`);
-    links.style.setProperty('--drawer-height', `${drawerHeight}px`);
-  };
+  const navLinks = nav.querySelector('.nav-links');
+  const navActions = nav.querySelector('.nav-actions');
 
   const setOpen = (open) => {
     nav.classList.toggle('nav-open', open);
     document.body.classList.toggle('nav-locked', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) {
-      syncDrawerLayout();
-      requestAnimationFrame(syncDrawerLayout);
-    }
+    if (navLinks) navLinks.setAttribute('aria-hidden', open ? 'false' : 'true');
+    if (navActions) navActions.setAttribute('aria-hidden', open ? 'false' : 'true');
   };
 
+  setOpen(false);
+
   toggle.addEventListener('click', () => {
-    setOpen(!nav.classList.contains('nav-open'));
+    const next = !nav.classList.contains('nav-open');
+    setOpen(next);
+    if (next && navLinks) {
+      const firstLink = navLinks.querySelector('a');
+      if (firstLink) firstLink.focus({ preventScroll: true });
+    }
   });
 
   document.querySelectorAll('.nav-links a, .nav-actions a').forEach((a) => {
@@ -67,15 +52,7 @@ function setupMobileNav() {
 
   window.addEventListener('resize', () => {
     if (window.innerWidth > 900) setOpen(false);
-    syncDrawerLayout();
   });
-
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', syncDrawerLayout);
-    window.visualViewport.addEventListener('scroll', syncDrawerLayout);
-  }
-
-  syncDrawerLayout();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
