@@ -13,15 +13,33 @@ function setupMobileNav() {
   const nav = document.querySelector('.nav');
   const toggle = document.querySelector('.nav-toggle');
   if (!nav || !toggle) return;
-  toggle.addEventListener('click', () => {
-    const open = nav.classList.toggle('nav-open');
+
+  const setOpen = (open) => {
+    nav.classList.toggle('nav-open', open);
+    document.body.classList.toggle('nav-locked', open);
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  toggle.addEventListener('click', () => {
+    setOpen(!nav.classList.contains('nav-open'));
   });
+
   document.querySelectorAll('.nav-links a, .nav-actions a').forEach((a) => {
-    a.addEventListener('click', () => {
-      nav.classList.remove('nav-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    });
+    a.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setOpen(false);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!nav.classList.contains('nav-open')) return;
+    if (nav.contains(event.target)) return;
+    setOpen(false);
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900) setOpen(false);
   });
 }
 
