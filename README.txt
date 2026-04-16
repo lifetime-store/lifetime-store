@@ -1,13 +1,10 @@
-Lifetime FVA70K Legal Wording Pack
+This is a HOTFIX, not a full file replacement.
 
-Contents
-- Lifetime_FVA70K_Legal_Wording_Pack.docx
-- Lifetime_FVA70K_Legal_Wording_Pack.pdf
-- standard_sitewide_line.txt
-- footer_copy.txt
-- about_page_copy.txt
-- support_page_copy.txt
-- policy_opening_clauses.txt
-- Lifeverse_to_FVA70K_Replacement_Map.csv
+The last crawler-safe patch broke the mobile layout by moving the mobile account/cart row out of normal flow.
 
-Use this pack to update the public website, policy pages, emails, invoices, and docs so the current legal operator is shown as FVA70K SERVICES while the brand remains Lifetime.
+Do this:
+1. Open your current file: public/assets/css/styles.css
+2. Paste the CSS block from this patch at the VERY END of that file
+3. Commit and redeploy
+
+Do NOT replace your entire styles.css with this file alone.
