@@ -1,6 +1,5 @@
 import { ok, error, optionsResponse } from '../../_lib/response.js';
 import { readJson } from '../../_lib/parse.js';
-import { verifyHumanCheck } from '../../_lib/human-check.js';
 import { getCustomerBySession } from '../../_lib/customer-auth.js';
 
 export async function onRequestOptions() { return optionsResponse(); }
@@ -20,8 +19,6 @@ export async function onRequestPost(context) {
   const customer = await getCustomerBySession(context.env, context.request);
   if (!customer) return error('Sign in to post in the community.', 401);
   const body = await readJson(context.request);
-  const human = await verifyHumanCheck(context.env, body.human_token, context.request.headers.get('cf-connecting-ip') || '');
-  if (!human.ok) return error(human.message, 400);
   const text = String(body.body || '').trim();
   const title = String(body.title || '').trim();
   const slug = String(body.product_slug || '').trim();

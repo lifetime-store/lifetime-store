@@ -38,12 +38,7 @@ const DEFAULT_CONTENT = {
   size_guide_html: '<h2>Size guide</h2><p>Use garment measurements and fit notes before checkout.</p>',
   collection_intro: 'Explore edited collections, seasonal drops, and core essentials.',
   support_intro: 'Product questions, authenticity concerns, and quality issues are handled here.',
-  orders_intro: 'Track active orders, delivery progress, and payment-linked updates here.',
-  faq_intro: 'Shipping, tracking, support, authenticity, and delivery questions answered in one place.',
-  hero_trust: 'Secure checkout · Verified originals · Live delivery tracking',
-  footer_note: 'Lifetime is a brand under Lifeverse Technologies.',
-  newsletter_intro: 'Join launch, restock, and delivery update mail.',
-  turnstile_intro: 'Human check is enabled on sensitive forms when security is turned on.'
+  orders_intro: 'Track active orders, delivery progress, and payment-linked updates here.'
 };
 
 export async function getSetting(env, key, fallback = null) {
@@ -80,7 +75,6 @@ export async function getStorefrontMeta(env, request) {
     locale,
     usdRate: rate,
     promotion,
-    turnstileSiteKey: env.TURNSTILE_SITE_KEY || '',
     ...content,
     content
   };
