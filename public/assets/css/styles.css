@@ -435,17 +435,7 @@ form {
   .footer-grid {
     grid-template-columns: 1fr;
   }
-  .nav {
-    flex-wrap: wrap;
-    padding: 0.8rem 0;
-  }
-  .nav-links {
-    order: 3;
-    width: 100%;
-    justify-content: space-between;
-  }
 }
-
 .products-grid img,
 .product-image img,
 .product-hero-media img,
